@@ -102,6 +102,8 @@ CREATE TABLE permissions (
     
     UNIQUE(role, resource)
 );
+
+// Cần thêm bảng role và role_permission
 ```
 
 ### 2.3 Product Backlog Database
