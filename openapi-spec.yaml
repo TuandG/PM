@@ -1,0 +1,1884 @@
+openapi: 3.0.3
+info:
+  title: Scrum Management System API
+  description: |
+    Comprehensive API documentation for the Scrum Management System built with microservices architecture.
+    
+    ## Architecture Overview
+    The system consists of 10 microservices:
+    1. User Management Service - Authentication & user profiles
+    2. Project Management Service - Projects & team management
+    3. Product Backlog Service - User stories & epics
+    4. Sprint Management Service - Sprint lifecycle management
+    5. Task Management Service - Task & subtask management
+    6. Daily Scrum Service - Daily updates & tracking
+    7. Sprint Review & Retrospective Service - Sprint analysis & feedback
+    8. Reporting & Analytics Service - Charts & performance metrics
+    9. Notification Service - Notifications & real-time chat
+    10. File Storage Service - File upload & management
+    
+    ## Authentication
+    All APIs use JWT Bearer token authentication unless specified otherwise.
+    
+  version: 1.0.0
+  contact:
+    name: Development Team
+    email: dev@scrumapp.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.scrumapp.com/v1
+    description: Production server
+  - url: https://staging-api.scrumapp.com/v1
+    description: Staging server
+  - url: http://localhost:8080/v1
+    description: Local development server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Common schemas
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+      required:
+        - error
+        - code
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of items
+        limit:
+          type: integer
+          description: Items per page
+        offset:
+          type: integer
+          description: Offset from start
+        hasMore:
+          type: boolean
+          description: Whether there are more items
+
+    # User Management schemas
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        phone:
+          type: string
+        avatar:
+          type: string
+          format: uri
+        isEmailVerified:
+          type: boolean
+        twoFactorEnabled:
+          type: boolean
+        ssoProviders:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AuthRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        rememberMe:
+          type: boolean
+          default: false
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        user:
+          $ref: '#/components/schemas/User'
+
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        fullName:
+          type: string
+        phone:
+          type: string
+      required:
+        - email
+        - password
+        - fullName
+
+    # Project Management schemas
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Active, Inactive, In planning, Completed]
+        createdBy:
+          type: string
+          format: uuid
+        userRole:
+          type: string
+          enum: [PO, SM, Developer, Viewer]
+        memberCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProjectMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        avatar:
+          type: string
+          format: uri
+        role:
+          type: string
+          enum: [PO, SM, Developer, Viewer]
+        joinedAt:
+          type: string
+          format: date-time
+
+    # Backlog schemas
+    UserStory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        storyPoint:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [Backlog, Planned, To do, In Progress, In Review, Done, Canceled]
+        assignee:
+          $ref: '#/components/schemas/User'
+        reporter:
+          $ref: '#/components/schemas/User'
+        timeEstimation:
+          type: integer
+          description: Time estimation in hours
+        sprintId:
+          type: string
+          format: uuid
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Epic:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        stories:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserStory'
+
+    # Sprint schemas
+    Sprint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        goal:
+          type: string
+        plannedStartDate:
+          type: string
+          format: date
+        plannedEndDate:
+          type: string
+          format: date
+        actualStartDate:
+          type: string
+          format: date
+        actualEndDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Upcoming, Missed, In progress, Completed, Canceled]
+        storyPointLimit:
+          type: integer
+        velocity:
+          type: integer
+        progress:
+          type: object
+          properties:
+            totalStoryPoints:
+              type: integer
+            completedStoryPoints:
+              type: integer
+            totalTasks:
+              type: integer
+            completedTasks:
+              type: integer
+            percentage:
+              type: number
+              format: float
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Task schemas
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        sprintId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          description: For subtasks
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [Task, Bug, SubTask]
+        status:
+          type: string
+          enum: [To Do, In Progress, In Review, Done, Blocked]
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        assignee:
+          $ref: '#/components/schemas/User'
+        reporter:
+          $ref: '#/components/schemas/User'
+        storyPoint:
+          type: integer
+        timeEstimation:
+          type: integer
+        timeSpent:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Daily Scrum schemas
+    DailyScrum:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        sprintId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        whatDidYesterday:
+          type: string
+        whatWillDoToday:
+          type: string
+        blockers:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Retrospective schemas
+    SprintRetrospective:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sprintId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [in_progress, completed]
+        facilitator:
+          type: string
+        format:
+          type: string
+          enum: [StartStopContinue, Glad-Sad-Mad, 4Ls]
+        createdAt:
+          type: string
+          format: date-time
+
+    RetrospectiveFeedback:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        retrospectiveId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        category:
+          type: string
+          enum: [Start, Stop, Continue]
+        content:
+          type: string
+        isAnonymous:
+          type: boolean
+        votes:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    ActionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        retrospectiveId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        assignee:
+          type: string
+          format: uuid
+        deadline:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Open, In Progress, Done]
+        createdAt:
+          type: string
+          format: date-time
+
+    # Notification schemas
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [Task, Sprint, Comment, Mention, DailyScrum, System]
+        title:
+          type: string
+        content:
+          type: string
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+          format: uuid
+        isRead:
+          type: boolean
+        channels:
+          type: array
+          items:
+            type: string
+            enum: [email, in-app, push]
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: string
+          format: date-time
+
+    # File schemas
+    File:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        originalName:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+          format: int64
+        url:
+          type: string
+          format: uri
+        thumbnailUrl:
+          type: string
+          format: uri
+        projectId:
+          type: string
+          format: uuid
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+          format: uuid
+        uploadedBy:
+          $ref: '#/components/schemas/User'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilePermission'
+        createdAt:
+          type: string
+          format: date-time
+
+    FilePermission:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        permission:
+          type: string
+          enum: [read, write, delete]
+
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        url:
+          type: string
+          format: uri
+        uploadedBy:
+          type: string
+          format: uuid
+        uploadedAt:
+          type: string
+          format: date-time
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+paths:
+  # User Management Service
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user account
+      description: Create a new user account with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+      security: []
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Invalidate current session and refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+              required:
+                - refreshToken
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Get new access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+              required:
+                - refreshToken
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security: []
+
+  /users/profile:
+    get:
+      tags:
+        - User Profile
+      summary: Get user profile
+      description: Retrieve current user's profile information
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - User Profile
+      summary: Update user profile
+      description: Update current user's profile information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                phone:
+                  type: string
+                avatar:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Project Management Service
+  /projects:
+    get:
+      tags:
+        - Projects
+      summary: Get user's projects
+      description: Retrieve list of projects where user is a member
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Active, Inactive, Completed]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      tags:
+        - Projects
+      summary: Create new project
+      description: Create a new project (creator becomes Product Owner)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                startDate:
+                  type: string
+                  format: date
+                endDate:
+                  type: string
+                  format: date
+              required:
+                - name
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /projects/{projectId}:
+    get:
+      tags:
+        - Projects
+      summary: Get project details
+      description: Retrieve detailed information about a specific project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Project details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    put:
+      tags:
+        - Projects
+      summary: Update project
+      description: Update project information (PO/SM only)
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum: [Active, Inactive, Completed]
+                startDate:
+                  type: string
+                  format: date
+                endDate:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Projects
+      summary: Delete project
+      description: Delete project (PO only)
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Project deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{projectId}/members:
+    get:
+      tags:
+        - Project Members
+      summary: Get project members
+      description: Retrieve list of project members
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [PO, SM, Developer, Viewer]
+      responses:
+        '200':
+          description: Project members retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectMember'
+
+    post:
+      tags:
+        - Project Members
+      summary: Add project member
+      description: Add new member to project (PO/SM only)
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  enum: [PO, SM, Developer, Viewer]
+              required:
+                - email
+                - role
+      responses:
+        '201':
+          description: Member added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectMember'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Product Backlog Service
+  /projects/{projectId}/backlog/user-stories:
+    get:
+      tags:
+        - User Stories
+      summary: Get user stories
+      description: Retrieve list of user stories in project backlog
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Backlog, Planned, Done, Canceled]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [High, Medium, Low]
+        - name: assignee
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: sprint
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: User stories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserStory'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      tags:
+        - User Stories
+      summary: Create user story
+      description: Create new user story in project backlog
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  type: string
+                  enum: [High, Medium, Low]
+                storyPoint:
+                  type: integer
+                assignee:
+                  type: string
+                  format: uuid
+                timeEstimation:
+                  type: integer
+              required:
+                - title
+                - description
+      responses:
+        '201':
+          description: User story created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStory'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /projects/{projectId}/backlog/user-stories/{storyId}:
+    get:
+      tags:
+        - User Stories
+      summary: Get user story details
+      description: Retrieve detailed information about a user story
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: storyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User story details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStory'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - User Stories
+      summary: Update user story
+      description: Update user story information
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: storyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  type: string
+                  enum: [High, Medium, Low]
+                storyPoint:
+                  type: integer
+                assignee:
+                  type: string
+                  format: uuid
+                timeEstimation:
+                  type: integer
+      responses:
+        '200':
+          description: User story updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStory'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - User Stories
+      summary: Delete user story
+      description: Delete user story from backlog
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: storyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User story deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Sprint Management Service
+  /projects/{projectId}/sprints:
+    get:
+      tags:
+        - Sprints
+      summary: Get project sprints
+      description: Retrieve list of sprints in project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Upcoming, In progress, Completed, Canceled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Sprints retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sprints:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Sprint'
+                  total:
+                    type: integer
+
+    post:
+      tags:
+        - Sprints
+      summary: Create new sprint
+      description: Create new sprint in project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                goal:
+                  type: string
+                plannedStartDate:
+                  type: string
+                  format: date
+                plannedEndDate:
+                  type: string
+                  format: date
+                storyPointLimit:
+                  type: integer
+              required:
+                - name
+                - goal
+                - plannedStartDate
+                - plannedEndDate
+      responses:
+        '201':
+          description: Sprint created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sprint'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /projects/{projectId}/sprints/{sprintId}:
+    get:
+      tags:
+        - Sprints
+      summary: Get sprint details
+      description: Retrieve detailed information about a sprint
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sprint details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sprint'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{projectId}/sprints/{sprintId}/start:
+    post:
+      tags:
+        - Sprints
+      summary: Start sprint
+      description: Start an upcoming sprint
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                duration:
+                  type: integer
+                  description: Sprint duration in days
+              required:
+                - duration
+      responses:
+        '200':
+          description: Sprint started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                  actualStartDate:
+                    type: string
+                    format: date
+                  actualEndDate:
+                    type: string
+                    format: date
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Task Management Service
+  /projects/{projectId}/tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Get project tasks
+      description: Retrieve list of tasks in project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [To Do, In Progress, In Review, Done, Blocked]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [Task, Bug, SubTask]
+        - name: assignee
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: sprint
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Tasks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  total:
+                    type: integer
+
+    post:
+      tags:
+        - Tasks
+      summary: Create new task
+      description: Create new task in project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                type:
+                  type: string
+                  enum: [Task, Bug, SubTask]
+                priority:
+                  type: string
+                  enum: [High, Medium, Low]
+                assignee:
+                  type: string
+                  format: uuid
+                storyPoint:
+                  type: integer
+                timeEstimation:
+                  type: integer
+                labels:
+                  type: array
+                  items:
+                    type: string
+                sprintId:
+                  type: string
+                  format: uuid
+                parentId:
+                  type: string
+                  format: uuid
+              required:
+                - title
+                - type
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Daily Scrum Service
+  /projects/{projectId}/daily-scrum:
+    get:
+      tags:
+        - Daily Scrum
+      summary: Get daily scrum updates
+      description: Retrieve daily scrum updates for project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+            description: Date for updates (default: today)
+        - name: sprint
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: user
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Daily scrum updates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  updates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DailyScrum'
+                  stats:
+                    type: object
+                    properties:
+                      totalMembers:
+                        type: integer
+                      submittedUpdates:
+                        type: integer
+                      pendingUpdates:
+                        type: integer
+                      blockers:
+                        type: integer
+
+    post:
+      tags:
+        - Daily Scrum
+      summary: Create daily scrum update
+      description: Create or update daily scrum for today
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sprintId:
+                  type: string
+                  format: uuid
+                whatDidYesterday:
+                  type: string
+                whatWillDoToday:
+                  type: string
+                blockers:
+                  type: string
+              required:
+                - sprintId
+                - whatDidYesterday
+                - whatWillDoToday
+      responses:
+        '201':
+          description: Daily scrum update created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyScrum'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  # Notifications Service
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get user notifications
+      description: Retrieve list of notifications for current user
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [Task, Sprint, Comment, Mention, DailyScrum, System]
+        - name: isRead
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  unreadCount:
+                    type: integer
+                  total:
+                    type: integer
+
+  /notifications/mark-read:
+    post:
+      tags:
+        - Notifications
+      summary: Mark notifications as read
+      description: Mark one or more notifications as read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notificationIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+              required:
+                - notificationIds
+      responses:
+        '200':
+          description: Notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  markedAsRead:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  failed:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  newUnreadCount:
+                    type: integer
+
+  # File Storage Service
+  /files/upload:
+    post:
+      tags:
+        - Files
+      summary: Upload file
+      description: Upload a file to the system
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                projectId:
+                  type: string
+                  format: uuid
+                resourceType:
+                  type: string
+                  enum: [task, user_story, comment, project]
+                resourceId:
+                  type: string
+                  format: uuid
+                description:
+                  type: string
+              required:
+                - file
+                - projectId
+                - resourceType
+                - resourceId
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /files/{fileId}:
+    get:
+      tags:
+        - Files
+      summary: Get file information
+      description: Retrieve file metadata and information
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /files/{fileId}/download:
+    get:
+      tags:
+        - Files
+      summary: Download file
+      description: Download file content
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: query
+          schema:
+            type: integer
+            description: File version (default: latest)
+        - name: inline
+          in: query
+          schema:
+            type: boolean
+            description: Display in browser vs download
+      responses:
+        '200':
+          description: File content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: User Profile
+    description: User profile management
+  - name: Projects
+    description: Project management operations
+  - name: Project Members
+    description: Project member management
+  - name: User Stories
+    description: User story and backlog management
+  - name: Sprints
+    description: Sprint lifecycle management
+  - name: Tasks
+    description: Task and subtask management
+  - name: Daily Scrum
+    description: Daily scrum updates and tracking
+  - name: Notifications
+    description: Notification management
+  - name: Files
+    description: File upload and management
+
+externalDocs:
+  description: Find out more about our API
+  url: https://docs.scrumapp.com
