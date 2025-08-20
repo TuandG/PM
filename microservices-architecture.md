@@ -27,36 +27,36 @@ Dựa trên tài liệu đặc tả, hệ thống Scrum Management sẽ được
 - Quản lý hồ sơ người dùng
 
 **Model Data**:
+
 ```typescript
-interface User {
-  id: string
-  email: string
-  passwordHash: string
-  fullName: string
-  phone?: string
-  avatar?: string
-  isEmailVerified: boolean
-  twoFactorEnabled: boolean
-  twoFactorSecret?: string
-  ssoProviders: SSOProvider[]
+interface BaseModel {
+  id: UUID
   createdAt: Date
   updatedAt: Date
+  createdBy: UUID
+  updatedBy: UUID
+}
+```
+
+```typescript
+interface User extends BaseModel {
+  email: string
+  passwordHash: string
+  firstName: string
+  lastName: string
+  phone?: string
+  avatarUrl?: string
+  isVerified: boolean
+  twoFactorEnabled: boolean
+  twoFactorSecret?: string
 }
 
 interface SSOProvider {
-  provider: 'google' | 'github'
+  userId: UUID
+  provider: 'google' | 'github' (EnumType.String)
   providerId: string
   email: string
 }
-
-// interface Session {
-//   id: string
-//   userId: string
-//   token: string
-//   refreshToken: string
-//   expiresAt: Date
-//   createdAt: Date
-// }
 ```
 
 ### 2.2 Project Management Service
@@ -69,34 +69,42 @@ interface SSOProvider {
 
 **Model Data**:
 ```typescript
-interface Project {
-  id: string
+interface Project extends BaseModel {
   name: string
   description?: string
   startDate: Date
-//   endDate: Date 
-  status: 'Active' | 'Inactive' | 'In planning' | 'Completed'
-  createdBy: string
-  createdAt: Date
-  updatedAt: Date
+  endDate: Date
+  status: 'Active' | 'Inactive' | 'Completed'
 }
 
-interface ProjectMember {
-  id: string
-  projectId: string
-  userId: string
-  role: 'PO' | 'SM' | 'Developer' | 'Viewer'
+interface ProjectSetting extends BaseModel {
+  projectId: UUID
+  defaultSPThreshold: number
+  ...
+}
+
+interface Invitation extends BaseModel {
+  userId: UUID
+  projectId: UUID
+  expiredDate: Date
+  status: 'Accepted', 'Rejected', 'Pending', 'Canceled'
+}
+
+interface ProjectMember extends BaseModel {
+  projectId: UUID
+  userId: UUID
+  role: ProjectRole
   joinedAt: Date
 }
 
-interface ProjectRole {
+interface ProjectRole extends BaseModel{
   role: string
   permissions: Permission[]
 }
 
-interface Permission {
+interface Permission extends BaseModel {
   resource: string
-  actions: string[]
+  actions: string
 }
 ```
 
@@ -113,75 +121,64 @@ interface Permission {
 
 **Model Data**:
 ```typescript
-interface UserStory {
-  id: string
-  projectId: string
+interface WorkItem extends BaseModel {
+  projectId: UUID
+  sprintId?: string
   title: string
-  description: string
+  description?: string
   priority: 'High' | 'Medium' | 'Low' | number
   storyPoint?: number
   status: 'Backlog' | 'Planned' | 'To do' | 'In Progress' | 'In Review' | 'Done' | 'Canceled'
   assignee?: string
-  reporter: string
+  reporter?: string
   timeEstimation?: number
-  attachments: Attachment[]
-  sprintId?: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface Epic {
-  id: string
-  projectId: string
-  title: string
-  description: string
-  stories: string[]
-  status: string
-}
-
-interface Attachment {
-  id: string
-  filename: string
-  url: string
-  uploadedBy: string
-  uploadedAt: Date
-}
-
-interface Task {
-  id: string
-  projectId: string
-  sprintId?: string
+  epicId?: UUID
   parentId?: string // For subtasks
+  itemType: 'Story' | 'Task' | 'Bug' | 'SubTask'
+}
+
+interface Label extends BaseModel {
+  projectId: UUID
+  name: string
+  description: string
+}
+
+interface WorkItemLabel extends BaseModel {
+  workItemId: UUID
+  labelId: UUID
+}
+
+interface Epic extends BaseModel {
+  projectId: string
   title: string
   description: string
-  type: 'Task' | 'Bug' | 'SubTask'
-  status: 'To Do' | 'In Progress' | 'In Review' | 'Done' | 'Blocked'
-  priority: 'High' | 'Medium' | 'Low'
-  assignee?: string
-  reporter: string
-  storyPoint?: number
-  timeEstimation?: number
-  timeSpent?: number
-  labels: string[]
-  attachments: Attachment[]
-  relationships: TaskRelationship[]
-  createdAt: Date
-  updatedAt: Date
 }
 
-interface TaskRelationship {
-  type: 'Blocked' | 'Blocked By' | 'Duplicated' | 'Duplicated By' | 'Related to' | 'Child' | 'Parent'
-  targetTaskId: string
+interface Attachment extends BaseModel {
+  relatedId: UUID
+  relatedType: 'WorkItem' | 'TaskComment'
+  filename: string
+  mineType: string 
+  url: string
 }
 
-interface TaskComment {
-  id: string
+interface TaskRelationship extends BaseModel {
+  type: 'Blocked' | 'Duplicated' | 'Related to' | 'Parent'
+  targetTaskId: UUID
+  workItemId: UUID
+}
+
+interface TaskComment extends BaseModel {
   taskId: string
   authorId: string
-  content: string
-  mentions: string[]
-  createdAt: Date
-  updatedAt: Date
+}
+
+interface CommentToken extends BaseModel {
+  taskCommentId: UUID
+  mentionId?: UUID
+  text: string
+  index: number
+  type: 'text' | 'mention'
 }
 ```
 
