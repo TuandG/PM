@@ -2,7 +2,18 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { BarChart3, List, Zap, Kanban, Calendar, MessageSquare, FileText, MoreHorizontal } from "lucide-react"
+import {
+  BarChart3,
+  List,
+  Zap,
+  Kanban,
+  Calendar,
+  MessageSquare,
+  FileText,
+  MoreHorizontal,
+  Users,
+  Settings,
+} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
@@ -48,6 +59,16 @@ const projectNavigation = [
     href: "/communication",
     icon: MessageSquare,
   },
+  {
+    name: "Members",
+    href: "/members",
+    icon: Users,
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: Settings,
+  },
 ]
 
 export function ProjectNav({ projectId }: ProjectNavProps) {
@@ -85,7 +106,7 @@ export function ProjectNav({ projectId }: ProjectNavProps) {
   const hiddenNavItems = projectNavigation.slice(visibleItems)
 
   return (
-    <div className="border-b border-border bg-background">
+    <div className="bg-background">
       <div ref={containerRef} className="flex items-center gap-1 px-6 py-3">
         {visibleNavItems.map((item) => {
           const href = `/project/${projectId}${item.href}`
