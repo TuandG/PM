@@ -79,7 +79,8 @@ interface Project extends BaseModel {
 
 interface ProjectSetting extends BaseModel {
   projectId: UUID
-  defaultSPThreshold: number
+  defaultSPLimit: number
+  defaultReminderTime: timeIso
   ...
 }
 
@@ -123,7 +124,7 @@ interface Permission extends BaseModel {
 ```typescript
 interface WorkItem extends BaseModel {
   projectId: UUID
-  sprintId?: string
+  sprintId?: UUID
   title: string
   description?: string
   priority: 'High' | 'Medium' | 'Low' | number
@@ -196,8 +197,7 @@ interface CommentToken extends BaseModel {
 
 **Model Data**:
 ```typescript
-interface Sprint {
-  id: string
+interface Sprint extends BaseModel {
   projectId: string
   name: string
   goal: string
@@ -205,29 +205,12 @@ interface Sprint {
   plannedEndDate: Date
   actualStartDate?: Date
   actualEndDate?: Date
-  status: 'Upcoming' | 'Missed' | 'In progress' | 'Completed' | 'Canceled'
-  storyPointLimit?: number
+  status: 'Planned' | 'In progress' | 'Completed' | 'Canceled'
+  storyPointLimit?: number // = project.defaultSPLimit
   velocity?: number
-  createdAt: Date
-  updatedAt: Date
 }
 
-interface SprintBacklog {
-  id: string
-  sprintId: string
-  workItems: SprintWorkItem[]
-}
-
-interface SprintWorkItem {
-  id: string
-  type: 'UserStory' | 'Task' | 'Bug'
-  workItemId: string
-  addedAt: Date
-}
-
-interface SprintReview {
-  id: string
-  sprintId: string
+interface SprintReview extends BaseModel{
   completedStoryPoints: number
   completedTasks: number
   totalTasks: number
@@ -237,30 +220,17 @@ interface SprintReview {
   notes: string
 }
 
-interface SprintRetrospective {
-  id: string
-  sprintId: string
+interface SprintRetrospective extends BaseModel{
+  sprintId: UUID
   createdAt: Date
+  content: string
 }
 
-interface RetrospectiveFeedback {
-  id: string
-  retrospectiveId: string
-  userId: string
+interface RetrospectiveFeedback extends BaseModel{
+  retrospectiveId: UUID
+  userId: UUID
   category: 'Start' | 'Stop' | 'Continue'
   content: string
-  isAnonymous: boolean
-  createdAt: Date
-}
-
-interface ActionItem {
-  id: string
-  retrospectiveId: string
-  description: string
-  assignee: string
-  deadline: Date
-  status: 'Open' | 'In Progress' | 'Done'
-  createdAt: Date
 }
 ```
 
@@ -274,24 +244,20 @@ interface ActionItem {
 
 **Model Data**:
 ```typescript
-interface DailyScrum {
-  id: string
-  projectId: string
-  sprintId: string
-  userId: string
+interface DailyRecord extends BaseModel{
+  projectId: UUID
+  sprintId: UUID
+  userId: UUID
   date: Date
   whatDidYesterday: string
   whatWillDoToday: string
   blockers: string
-  createdAt: Date
-  updatedAt: Date
 }
 
-interface DailyScrumReminder {
-  id: string
-  projectId: string
+interface DailyReminder {
+  projectId: UUID
   userId: string
-  reminderTime: string // HH:mm format
+  reminderTime: string // HH:mm format // project.defaultReminderTime
   isEnabled: boolean
 }
 ```
@@ -358,41 +324,23 @@ interface Report {
 
 **Model Data**:
 ```typescript
-interface Notification {
-  id: string
-  userId: string
-  type: 'Task' | 'Sprint' | 'Comment' | 'Mention' | 'DailyScrum' | 'System'
+interface Notification extends BaseModel{
+  userId: UUID
+  type: 'Task' | 'Comment' | 'Mention' | 'System'
   title: string
   content: string
   resourceType: string
   resourceId: string
-  isRead: boolean
+  isRead?: boolean
   channels: ('email' | 'in-app' | 'push')[]
-  createdAt: Date
-  readAt?: Date
 }
 
-interface NotificationSettings {
-  id: string
-  userId: string
+interface NotificationSettings extends BaseModel{
+  projectId: UUID
+  userId: UUID
   emailEnabled: boolean
   inAppEnabled: boolean
-  pushEnabled: boolean
   eventTypes: string[]
-  quietHours?: {
-    start: string
-    end: string
-  }
-}
-
-interface NotificationTemplate {
-  id: string
-  type: string
-  subject: string
-  emailTemplate: string
-  inAppTemplate: string
-  pushTemplate: string
-  isActive: boolean
 }
 ```
 
