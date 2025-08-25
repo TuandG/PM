@@ -44,9 +44,10 @@ const navigation = [
 interface SidebarNavProps {
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
+  sidebarWidth: number
 }
 
-export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
+export function SidebarNav({ sidebarOpen, setSidebarOpen, sidebarWidth }: SidebarNavProps) {
   const pathname = usePathname()
   const [isProjectsExpanded, setIsProjectsExpanded] = useState(true)
 
@@ -54,7 +55,10 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
   const hasMoreProjects = projects.length > MAX_SIDEBAR_PROJECTS
 
   return (
-    <div className="flex h-full w-60 flex-col bg-sidebar border-r border-sidebar-border">
+    <div
+      className="flex h-full flex-col bg-sidebar border-r border-sidebar-border"
+      style={{ width: `${sidebarWidth}px` }}
+    >
       <div className="flex h-16 items-center justify-between pl-6 pr-3 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -130,7 +134,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
                                 : "bg-gray-400",
                           )}
                         />
-                        <span className="truncate max-w-33">{project.name}</span>
+                        <span className="truncate" style={{ maxWidth: `${Math.max(sidebarWidth - 100, 80)}px` }}>{project.name}</span>
                       </Button>
                     </Link>
                   )
