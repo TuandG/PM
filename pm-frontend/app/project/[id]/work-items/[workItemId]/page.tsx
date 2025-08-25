@@ -143,7 +143,7 @@ export default function StoryDetailPage({ params }: { params: { id: string; stor
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-4 max-w-7xl mx-auto">
+      <div className="p-2 sm:p-4 max-w-full xl:max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-on-surface-variant mb-6">
           <NextLink href={`/project/${params.id}`} className="hover:text-on-surface transition-colors">

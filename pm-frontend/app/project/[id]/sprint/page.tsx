@@ -337,7 +337,7 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-4 max-w-7xl mx-auto">
+      <div className="p-2 sm:p-4 max-w-full xl:max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -444,18 +444,18 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search sprints..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-outline"
-            />
-          </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search sprints..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 rounded-full border-outline"
+          />
+        </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40 rounded-full border-outline">
+            <SelectTrigger className="w-full sm:w-40 rounded-full border-outline">
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue />
             </SelectTrigger>

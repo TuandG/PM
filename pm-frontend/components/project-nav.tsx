@@ -81,25 +81,52 @@ export function ProjectNav({ projectId }: ProjectNavProps) {
       if (!containerRef.current) return
 
       const container = containerRef.current
-      const items = container.querySelectorAll("[data-nav-item]")
+      const containerWidth = container.offsetWidth
+      
+      // Ước tính kích thước mỗi item (có thể điều chỉnh theo thiết kế thực tế)
+      const estimatedItemWidths = projectNavigation.map(item => {
+        // Tính toán dựa trên độ dài text + icon + padding
+        return Math.max(80, item.name.length * 8 + 50) // 8px per character + 50px cho icon và padding
+      })
+      
       let totalWidth = 0
       let visibleCount = 0
-
-      items.forEach((item, index) => {
-        const itemWidth = (item as HTMLElement).offsetWidth + 4 // gap
-        if (totalWidth + itemWidth + 100 < container.offsetWidth) {
-          // 100px for more button
+      const moreButtonWidth = 80 // Width của "More" button
+      
+      for (let i = 0; i < projectNavigation.length; i++) {
+        const itemWidth = estimatedItemWidths[i] + 4 // gap
+        const needsMoreButton = i < projectNavigation.length - 1
+        const requiredWidth = totalWidth + itemWidth + (needsMoreButton ? moreButtonWidth : 0)
+        
+        if (requiredWidth <= containerWidth) {
           totalWidth += itemWidth
           visibleCount++
+        } else {
+          break
         }
-      })
-
-      setVisibleItems(Math.max(1, visibleCount))
+      }
+      
+      // Nếu tất cả items đều fit, hiển thị tất cả
+      if (visibleCount === projectNavigation.length) {
+        setVisibleItems(projectNavigation.length)
+      } else {
+        setVisibleItems(Math.max(1, visibleCount))
+      }
     }
 
     checkOverflow()
+    
+    const resizeObserver = new ResizeObserver(checkOverflow)
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+    
     window.addEventListener("resize", checkOverflow)
-    return () => window.removeEventListener("resize", checkOverflow)
+    
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener("resize", checkOverflow)
+    }
   }, [])
 
   const visibleNavItems = projectNavigation.slice(0, visibleItems)

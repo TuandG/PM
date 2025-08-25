@@ -249,7 +249,7 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-4 max-w-[1600px] mx-auto">
+      <div className="p-2 sm:p-4 max-w-full xl:max-w-[1600px] mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
