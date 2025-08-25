@@ -37,45 +37,45 @@ import NextLink from "next/link"
 
 const sprints = [
   {
-    id: 3,
-    name: "Sprint 3",
+  id: 3,
+  name: "Sprint 3",
     number: 3,
     goal: "Complete user authentication and basic product catalog functionality with comprehensive testing",
-    startDate: "March 1, 2024",
-    endDate: "March 15, 2024",
-    status: "active",
-    progress: 77,
+  startDate: "March 1, 2024",
+  endDate: "March 15, 2024",
+  status: "active",
+  progress: 77,
     storyPoints: { completed: 23, committed: 30 },
     tasks: { done: 18, total: 24 },
     velocity: 3.2,
-    daysLeft: 8,
+  daysLeft: 8,
     totalDays: 14,
-    stories: [
-      {
-        id: "US-001",
-        title: "User Registration",
-        status: "done",
-        storyPoints: 5,
+  stories: [
+    {
+      id: "US-001",
+      title: "User Registration",
+      status: "done",
+      storyPoints: 5,
         priority: "high",
-        assignee: { name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
-      },
-      {
-        id: "US-002",
-        title: "User Login",
-        status: "in_progress",
-        storyPoints: 3,
+      assignee: { name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
+    },
+    {
+      id: "US-002",
+      title: "User Login",
+      status: "in_progress",
+      storyPoints: 3,
         priority: "high",
-        assignee: { name: "Jane Smith", avatar: "/placeholder.svg?height=32&width=32" },
-      },
-      {
-        id: "US-006",
-        title: "Product Categories",
-        status: "todo",
-        storyPoints: 8,
+      assignee: { name: "Jane Smith", avatar: "/placeholder.svg?height=32&width=32" },
+    },
+    {
+      id: "US-006",
+      title: "Product Categories",
+      status: "todo",
+      storyPoints: 8,
         priority: "medium",
-        assignee: { name: "Mike Johnson", avatar: "/placeholder.svg?height=32&width=32" },
-      },
-    ],
+      assignee: { name: "Mike Johnson", avatar: "/placeholder.svg?height=32&width=32" },
+    },
+  ],
   },
   {
     id: 4,
@@ -317,7 +317,7 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
     switch (sprint.status) {
       case 'planned':
         return [
-          { label: 'Sprint Planning', action: () => {} },
+          { label: 'Sprint Planning', action: () => window.location.href = `/project/${resolvedParams.id}/sprint/${sprint.id}/planning` },
           { label: 'Start Sprint', action: () => {} }
         ]
       case 'active':
@@ -419,7 +419,7 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                       />
                     </div>
                   </div>
-                  <div>
+        <div>
                     <Label className="text-sm font-medium text-foreground mb-2 block">Story Point Limit</Label>
                     <Input
                       type="number"
@@ -485,8 +485,8 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-full bg-primary/10 text-primary border border-primary/20">
                             <Play className="w-4 h-4" />
-                          </div>
-                          <div>
+      </div>
+                <div>
                             <div className="flex items-center gap-3">
                               <h3 className="text-lg font-semibold text-foreground">{sprint.name}</h3>
                               <Badge className="bg-primary/10 text-primary border-primary/20 border font-medium px-3 py-1 rounded-full text-sm">
@@ -498,8 +498,8 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                               <span className="font-medium text-primary">{sprint.daysLeft} days left</span>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
+                </div>
+                <div className="flex items-center gap-2">
                           {getSprintActions(sprint).slice(0, 2).map((action, index) => (
                             <Button
                               key={index}
@@ -511,22 +511,22 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                               {action.label}
                             </Button>
                           ))}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                               <Button variant="outline" size="sm" className="rounded-full hover:bg-muted/50 border-outline">
                                 <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
+                      </Button>
+                    </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="rounded-2xl">
                               {getSprintActions(sprint).map((action, index) => (
                                 <DropdownMenuItem key={index} onClick={action.action} className="rounded-lg">
                                   {action.label}
                                 </DropdownMenuItem>
                               ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
                     </div>
 
                     {/* Sprint Content */}
@@ -546,59 +546,59 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                           </div>
                           <div className="text-xl font-bold text-foreground">
                             {sprint.storyPoints.completed}/{sprint.storyPoints.committed}
-                          </div>
-                        </div>
+                  </div>
+                </div>
 
                         <div className="bg-muted/30 rounded-2xl p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <CheckCircle2 className="w-4 h-4 text-chart-2" />
                             <span className="text-sm font-medium text-foreground">Tasks</span>
-                          </div>
+                  </div>
                           <div className="text-xl font-bold text-foreground">
                             {sprint.tasks.done}/{sprint.tasks.total}
-                          </div>
-                        </div>
+                </div>
+                  </div>
 
                         <div className="bg-muted/30 rounded-2xl p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="w-4 h-4 text-chart-4" />
                             <span className="text-sm font-medium text-foreground">Velocity</span>
-                          </div>
+                </div>
                           <div className="text-xl font-bold text-foreground">
                             {sprint.velocity} pts/day
-                          </div>
-                        </div>
-                      </div>
+                  </div>
+                </div>
+              </div>
 
                       {/* Progress Bar */}
                       <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Sprint Progress</span>
                           <span className="font-medium text-foreground">{sprint.progress}%</span>
-                        </div>
+                </div>
                         <Progress value={sprint.progress} className="h-2" />
-                      </div>
+              </div>
 
                       {/* Sprint Stories - Hidden by default */}
                       {sprint.stories.length > 0 && (
                         <div className="border-t border-outline-variant/20 pt-4">
-                          <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium text-foreground">
                               Current Stories ({sprint.stories.length})
                             </h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                  <Button
+                    variant="ghost"
+                    size="sm"
                               onClick={() => toggleSprintStories(sprint.id)}
                               className="rounded-full h-6 w-6 p-0 hover:bg-muted/50"
-                            >
+                  >
                               {expandedSprints.includes(sprint.id) ? (
-                                <ChevronDown className="h-4 w-4" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                </Button>
+              </div>
                           
                           {/* Only show when expanded */}
                           {expandedSprints.includes(sprint.id) && (
@@ -613,24 +613,24 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                                   </span>
                                   <Badge className={`${statusColors[story.status as keyof typeof statusColors]} font-medium px-2 py-0.5 rounded-full text-xs`}>
                                     {story.status.replace('_', ' ').toUpperCase()}
-                                  </Badge>
+                        </Badge>
                                   <span className="text-xs text-muted-foreground">{story.storyPoints}pts</span>
                                   {story.assignee && (
-                                    <Avatar className="w-6 h-6">
+                        <Avatar className="w-6 h-6">
                                       <AvatarImage src={story.assignee.avatar} alt={story.assignee.name} />
                                       <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
                                         {story.assignee.name.split(' ').map((n: string) => n[0]).join('')}
-                                      </AvatarFallback>
-                                    </Avatar>
+                          </AvatarFallback>
+                        </Avatar>
                                   )}
-                                </div>
-                              ))}
-                            </div>
+                    </div>
+                  ))}
+                </div>
                           )}
                         </div>
                       )}
                     </div>
-                  </div>
+                      </div>
                 ))}
 
                 {/* Planned Sprints Section - Simplified */}
@@ -655,20 +655,20 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                                 {sprint.startDate} - {sprint.endDate}
                               </div>
                             </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="rounded-full h-7 w-7 p-0 hover:bg-muted/50">
                                   <MoreVertical className="w-3 h-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
+                          </Button>
+                        </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="rounded-2xl">
                                 {getSprintActions(sprint).map((action, index) => (
                                   <DropdownMenuItem key={index} onClick={action.action} className="rounded-lg">
                                     {action.label}
                                   </DropdownMenuItem>
                                 ))}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                           </div>
 
                           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{sprint.goal}</p>
@@ -709,7 +709,7 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="rounded-full h-7 w-7 p-0 hover:bg-muted/50">
                                   <MoreVertical className="w-3 h-3" />
-                                </Button>
+                      </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="rounded-2xl">
                                 {getSprintActions(sprint).map((action, index) => (
@@ -753,8 +753,8 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                     <div className="col-span-1 text-sm font-semibold text-foreground">Velocity</div>
                     <div className="col-span-1 text-sm font-semibold text-foreground">Actions</div>
                   </div>
-                </div>
-                
+          </div>
+
                 <div className="divide-y divide-outline-variant/20">
                   {filteredSprints.map((sprint) => (
                     <div key={sprint.id}>
@@ -770,14 +770,14 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                                 onClick={() => toggleSprintStories(sprint.id)}
                                 className="rounded-full h-6 w-6 p-0 hover:bg-muted/50"
                               >
-                                {expandedSprints.includes(sprint.id) ? (
-                                  <ChevronDown className="h-4 w-4" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4" />
-                                )}
-                              </Button>
+                        {expandedSprints.includes(sprint.id) ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
                             )}
-                          </div>
+                      </div>
                           
                           <div className="col-span-3">
                             <div className="flex flex-col justify-center">
@@ -788,8 +788,8 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                                 {sprint.status !== 'completed' && (
                                   <span className="font-medium text-primary">({sprint.daysLeft} days left)</span>
                                 )}
-                              </div>
-                            </div>
+                    </div>
+                  </div>
                           </div>
                           
                           <div className="col-span-2">
@@ -884,17 +884,17 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                                     </AvatarFallback>
                                   </Avatar>
                                 )}
-                              </div>
-                            ))}
+                        </div>
+                      ))}
                           </div>
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
+            ))}
+          </div>
               </div>
             )}
-          </div>
+        </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
@@ -903,24 +903,26 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
               <div className="bg-muted/30 px-4 py-3">
                 <h3 className="text-lg font-medium text-foreground">Quick Actions</h3>
               </div>
-              <div className="px-4 py-4 space-y-3">
-                <Button className="w-full rounded-full">
-                  <Zap className="w-4 h-4 mr-2" />
-                  Start Sprint Planning
-                </Button>
-                <Button variant="outline" className="w-full rounded-full border-outline hover:bg-muted/50">
+                            <div className="px-4 py-4 space-y-3">
+                <NextLink href={`/project/${resolvedParams.id}/sprint/${filteredSprints.find(s => s.status === 'planned')?.id || 4}/planning`} className="block">
+                  <Button className="w-full rounded-full">
+                    <Zap className="w-4 h-4 mr-2" />
+                    Start Sprint Planning
+                  </Button>
+                </NextLink>
+                <Button variant="outline" className="w-full rounded-full border-outline hover:bg-muted/50" onClick={() => setShowCreateModal(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Create New Sprint
-                </Button>
+                Create New Sprint
+              </Button>
                 <Button variant="outline" className="w-full rounded-full border-outline hover:bg-muted/50">
                   <BarChart3 className="w-4 h-4 mr-2" />
-                  Sprint Retrospective
-                </Button>
+                Sprint Retrospective
+              </Button>
               </div>
             </div>
 
             {/* Backlog Items with Search and Drag & Drop */}
-            <div className="bg-surface rounded-3xl overflow-hidden">
+            {/* <div className="bg-surface rounded-3xl overflow-hidden">
               <div className="bg-muted/30 px-4 py-3">
                 <h3 className="text-lg font-medium text-foreground">Backlog Items</h3>
               </div>
@@ -962,9 +964,9 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                           </AvatarFallback>
                         </Avatar>
                       )}
-                    </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
                 
                 <div className="grid grid-cols-2 gap-2">
                   <NextLink href={`/project/${resolvedParams.id}/backlog`}>
@@ -974,10 +976,10 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                   </NextLink>
                   <Button variant="outline" size="sm" className="w-full rounded-full border-outline hover:bg-muted/50 text-xs">
                     Add Item
-                  </Button>
+              </Button>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Sprint Metrics */}
             <div className="bg-surface rounded-3xl overflow-hidden">
@@ -1006,7 +1008,7 @@ export default function ProjectSprintPage({ params }: { params: Promise<{ id: st
                 </div>
               </div>
             </div>
-          </div>
+              </div>
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@ import { ModeToggle } from "@/components/mode-toggle"
 
 export function TopBar() {
   return (
-    <header className="flex h-16 items-center justify-between px-6 bg-background border-b border-border">
+    <header className="flex h-16 items-center justify-between px-6 bg-background">
       <div className="flex items-center gap-4 flex-1">
         <div className="relative max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

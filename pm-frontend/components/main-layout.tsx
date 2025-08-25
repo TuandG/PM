@@ -22,7 +22,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center border-b border-outline-variant bg-surface">
+        <div className="flex items-center border-b border-border bg-background">
           {!sidebarOpen && (
             <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)} className="m-2 h-8 w-8 p-0">
               <Menu className="h-4 w-4" />
