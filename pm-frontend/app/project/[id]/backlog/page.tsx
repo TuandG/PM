@@ -155,14 +155,14 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing.current || !containerRef.current) return
-    
+
     const containerRect = containerRef.current.getBoundingClientRect()
     const newWidth = containerRect.right - e.clientX
-    
+
     // Min width: 300px, Max width: 60% of container
     const minWidth = 300
     const maxWidth = containerRect.width * 0.6
-    
+
     setWorkItemWidth(Math.max(minWidth, Math.min(newWidth, maxWidth)))
   }, [])
 
@@ -174,10 +174,10 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
 
   const handleQuickCreate = () => {
     if (!quickCreateTitle.trim()) return
-    
+
     // Generate a new ID (in real app, this would be handled by backend)
     const newId = `PROJ-${Date.now()}`
-    
+
     const newWorkItem = {
       id: newId,
       title: quickCreateTitle.trim(),
@@ -196,19 +196,19 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
       subtasks: [],
       acceptanceCriteria: []
     }
-    
+
     // In real app, you would call an API here
     // For now, we'll just add it to the stories array (this is just for demo)
     stories.unshift(newWorkItem)
-    
+
     // Clear the form and hide it
     setQuickCreateTitle("")
     setQuickCreateType("story")
     setShowQuickCreate(false)
-    
+
     // Auto-select the new item
     setSelectedStory(newWorkItem)
-    
+
     // Force a small delay to ensure layout recalculation
     setTimeout(() => {
       // Trigger a re-render if needed
@@ -259,14 +259,33 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
               <DialogHeader className="pb-6">
                 <DialogTitle className="text-2xl font-semibold text-on-surface">Create New Work Item</DialogTitle>
               </DialogHeader>
-              
-                <div className="space-y-6">
-                {/* Type & Priority Row */}
-                <div className="grid grid-cols-2 gap-4">
+
+              <div className="space-y-5">
+                {/* Title - Ưu tiên cao nhất */}
+                <div>
+                  <Label className="text-sm font-medium text-on-surface mb-2 block">Title *</Label>
+                  <Input
+                    placeholder="Enter work item title..."
+                    className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary h-10"
+                  />
+                </div>
+
+                {/* Description - Thứ hai */}
+                <div>
+                  <Label className="text-sm font-medium text-on-surface mb-2 block">Description</Label>
+                  <Textarea
+                    placeholder="Enter detailed description (optional)"
+                    rows={3}
+                    className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary resize-none"
+                  />
+                </div>
+
+                {/* Type & Priority Row - Compact layout */}
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-on-surface mb-2 block">Type</Label>
                     <Select defaultValue="story">
-                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary">
+                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="elevation-3 rounded-2xl border-outline-variant/50">
@@ -297,11 +316,11 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium text-on-surface mb-2 block">Priority</Label>
                     <Select defaultValue="medium">
-                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary">
+                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="elevation-3 rounded-2xl border-outline-variant/50">
@@ -313,33 +332,11 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
 
-                {/* Title */}
-                <div>
-                  <Label className="text-sm font-medium text-on-surface mb-2 block">Title</Label>
-                    <Input
-                      placeholder="Enter work item title..."
-                    className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary"
-                    />
-                  </div>
-
-                {/* Description */}
-                  <div>
-                  <Label className="text-sm font-medium text-on-surface mb-2 block">Description</Label>
-                    <Textarea
-                    placeholder="Enter detailed description (optional)"
-                    rows={4}
-                    className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary resize-none"
-                    />
-                  </div>
-
-                {/* Story Points & Assignee Row */}
-                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-on-surface mb-2 block">Story Points</Label>
                     <Select defaultValue="0">
-                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary">
+                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="elevation-3 rounded-2xl border-outline-variant/50">
@@ -354,11 +351,15 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <div>
+                </div>
+
+                {/* Points & Assignee Row - Tối ưu space */}
+                <div className="grid grid-cols-2 gap-4">
+
+                  <div className="col-span-2">
                     <Label className="text-sm font-medium text-on-surface mb-2 block">Assignee</Label>
                     <Select>
-                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary">
+                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary h-9">
                         <SelectValue placeholder="Select assignee" />
                       </SelectTrigger>
                       <SelectContent className="elevation-3 rounded-2xl border-outline-variant/50">
@@ -369,24 +370,24 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </SelectContent>
                     </Select>
                   </div>
-                  </div>
 
-                {/* Sprint */}
+                  {/* Sprint - Cuối cùng */}
                   <div>
-                  <Label className="text-sm font-medium text-on-surface mb-2 block">Sprint</Label>
-                  <Select>
-                    <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary">
-                      <SelectValue placeholder="Select sprint (optional)" />
-                    </SelectTrigger>
-                    <SelectContent className="elevation-3 rounded-2xl border-outline-variant/50">
-                      <SelectItem value="backlog">Backlog</SelectItem>
-                      <SelectItem value="sprint1">Sprint 1</SelectItem>
-                      <SelectItem value="sprint2">Sprint 2</SelectItem>
-                      <SelectItem value="sprint3">Sprint 3</SelectItem>
-                    </SelectContent>
-                  </Select>
-                    </div>
+                    <Label className="text-sm font-medium text-on-surface mb-2 block">Sprint</Label>
+                    <Select>
+                      <SelectTrigger className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary h-9">
+                        <SelectValue placeholder="Select sprint (optional)" />
+                      </SelectTrigger>
+                      <SelectContent className="elevation-3 rounded-2xl border-outline-variant/50">
+                        <SelectItem value="backlog">Backlog</SelectItem>
+                        <SelectItem value="sprint1">Sprint 1</SelectItem>
+                        <SelectItem value="sprint2">Sprint 2</SelectItem>
+                        <SelectItem value="sprint3">Sprint 3</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                </div>
+              </div>
 
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-6 border-t border-outline-variant/30">
@@ -397,8 +398,8 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                 >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={() => setShowCreateModal(false)} 
+                <Button
+                  onClick={() => setShowCreateModal(false)}
                   className="rounded-full elevation-2 bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Create Work Item
@@ -523,442 +524,439 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
           <div className="bg-surface rounded-3xl overflow-hidden">
             {/* Table Wrapper with Horizontal Scroll Only */}
             <div className="overflow-x-auto">
-                <div className="min-w-[1200px]">
-                  {/* Header */}
-                  <div className="bg-surface-variant/30 px-6 py-1.5 border-b border-outline-variant/20 sticky top-0 z-10">
-                    <div className="flex items-center min-h-[32px]">
-                      <div className="w-[60px] flex items-center justify-start">
+              <div className="min-w-[1200px]">
+                {/* Header */}
+                <div className="bg-surface-variant/30 px-6 py-1.5 border-b border-outline-variant/20 sticky top-0 z-10">
+                  <div className="flex items-center min-h-[32px]">
+                    <div className="w-[60px] flex-shrink-0 flex items-center justify-start">
                       <Checkbox
                         checked={selectedStories.length === filteredStories.length}
                         onCheckedChange={toggleSelectAll}
-                          className="rounded-md"
-                        />
-                      </div>
-                      <div className="w-[80px] text-sm font-semibold text-on-surface-variant">Type</div>
-                      <div className="w-[100px] text-sm font-semibold text-on-surface-variant">Key</div>
-                      <div className="w-[300px] text-sm font-semibold text-on-surface-variant">Summary</div>
-                      <div className="w-[120px] text-sm font-semibold text-on-surface-variant">Status</div>
-                      <div className="w-[120px] text-sm font-semibold text-on-surface-variant">Priority</div>
-                      <div className="w-[80px] text-sm font-semibold text-on-surface-variant">Points</div>
-                      <div className="w-[140px] text-sm font-semibold text-on-surface-variant">Assignee</div>
-                      <div className="w-[100px] text-sm font-semibold text-on-surface-variant">Sprint</div>
-                      <div className="w-[100px] text-sm font-semibold text-on-surface-variant">Created</div>
-                      <div className="w-[60px]"></div>
+                        className="rounded-md"
+                      />
                     </div>
+                    <div className="w-[80px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Type</div>
+                    <div className="w-[100px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Key</div>
+                    <div className="flex-1 min-w-[200px] text-sm font-semibold text-on-surface-variant">Summary</div>
+                    <div className="w-[120px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Status</div>
+                    <div className="w-[120px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Priority</div>
+                    <div className="w-[80px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Points</div>
+                    <div className="w-[140px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Assignee</div>
+                    <div className="w-[100px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Sprint</div>
+                    <div className="w-[100px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Created</div>
+                    <div className="w-[60px] flex-shrink-0"></div>
                   </div>
-                  
-                  {/* Rows */}
-                  <div className="divide-y divide-outline-variant/10">
-                    {filteredStories.map((story, index) => (
-                      <div
+                </div>
+
+                {/* Rows */}
+                <div className="divide-y divide-outline-variant/10">
+                  {filteredStories.map((story, index) => (
+                    <div
                       key={story.id}
-                        className={`flex items-center min-h-[48px] px-6 py-1.5 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${
-                          selectedStory?.id === story.id ? "bg-primary/10 border-l-4 border-l-primary" : ""
+                      className={`flex items-center min-h-[48px] px-6 py-1.5 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${selectedStory?.id === story.id ? "bg-primary/10 border-l-4 border-l-primary" : ""
                         } ${index % 2 === 0 ? "bg-surface" : "bg-surface-variant/10"}`}
                       onClick={() => handleStoryClick(story)}
                     >
-                        {/* Checkbox */}
-                        <div className="w-[60px] flex items-center justify-start" onClick={(e) => e.stopPropagation()}>
+                      {/* Checkbox */}
+                      <div className="w-[60px] flex-shrink-0 flex items-center justify-start" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedStories.includes(story.id)}
                           onCheckedChange={() => toggleStorySelection(story.id)}
-                            className="rounded-md"
-                          />
-                        </div>
-                        
-                        {/* Type */}
-                        <div className="w-[80px] flex items-center justify-start">
-                          <div className={`p-2 rounded-full ${
-                            story.type === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
+                          className="rounded-md"
+                        />
+                      </div>
+
+                      {/* Type */}
+                      <div className="w-[80px] flex-shrink-0 flex items-center justify-start">
+                        <div className={`p-2 rounded-full ${story.type === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
                             story.type === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                            'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                              'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                           }`}>
-                            {typeIcons[story.type as keyof typeof typeIcons]}
-                          </div>
+                          {typeIcons[story.type as keyof typeof typeIcons]}
                         </div>
-                        
-                        {/* Key */}
-                        <div className="w-[100px]">
+                      </div>
+
+                      {/* Key */}
+                      <div className="w-[100px] flex-shrink-0">
                         <Link
                           href={`/project/${params.id}/work-items/${story.id}`}
-                            className="text-primary hover:underline font-semibold text-sm"
+                          className="text-primary hover:underline font-semibold text-sm"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {story.id}
                         </Link>
-                        </div>
-                        
-                        {/* Summary */}
-                        <div className="w-[300px] pr-4">
-                          <div className="font-medium text-on-surface truncate">{story.title}</div>
-                        </div>
-                        
-                        {/* Status */}
-                        <div className="w-[120px]">
-                          <Badge 
-                            variant="outline" 
-                            className={`${statusColors[story.status as keyof typeof statusColors]} font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap`}
-                          >
-                            {story.status.replace("_", " ").toUpperCase()}
+                      </div>
+
+                      {/* Summary */}
+                      <div className="flex-1 min-w-[200px] pr-4">
+                        <div className="font-medium text-on-surface truncate">{story.title}</div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="w-[120px] flex-shrink-0">
+                        <Badge
+                          variant="outline"
+                          className={`${statusColors[story.status as keyof typeof statusColors]} font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap`}
+                        >
+                          {story.status.replace("_", " ").toUpperCase()}
                         </Badge>
-                        </div>
-                        
-                        {/* Priority */}
-                        <div className="w-[120px]">
-                          <Badge 
-                            variant="outline" 
-                            className={`${priorityColors[story.priority as keyof typeof priorityColors]} font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap`}
-                          >
-                            {story.priority.toUpperCase()}
+                      </div>
+
+                      {/* Priority */}
+                      <div className="w-[120px] flex-shrink-0">
+                        <Badge
+                          variant="outline"
+                          className={`${priorityColors[story.priority as keyof typeof priorityColors]} font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap`}
+                        >
+                          {story.priority.toUpperCase()}
                         </Badge>
+                      </div>
+
+                      {/* Points */}
+                      <div className="w-[80px] flex-shrink-0 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-primary/10 text-primary font-bold rounded-full text-sm flex items-center justify-center">
+                          {story.storyPoints}
                         </div>
-                        
-                        {/* Points */}
-                        <div className="w-[80px] flex items-center justify-center">
-                          <div className="w-8 h-8 bg-primary/10 text-primary font-bold rounded-full text-sm flex items-center justify-center">
-                            {story.storyPoints}
-                          </div>
-                        </div>
-                        
-                        {/* Assignee */}
-                        <div className="w-[140px]">
-                          {story.assignee ? (
+                      </div>
+
+                      {/* Assignee */}
+                      <div className="w-[140px] flex-shrink-0">
+                        {story.assignee ? (
                           <div className="flex items-center gap-2">
-                              <Avatar className="w-7 h-7 ring-2 ring-outline-variant/30 flex-shrink-0">
+                            <Avatar className="w-7 h-7 ring-2 ring-outline-variant/30 flex-shrink-0">
                               <AvatarImage
                                 src={story.assignee.avatar || "/placeholder.svg"}
                                 alt={story.assignee.name}
                               />
-                                <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+                              <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
                                 {story.assignee.name
                                   .split(" ")
-                                    .map((n: string) => n[0])
+                                  .map((n: string) => n[0])
                                   .join("")}
                               </AvatarFallback>
                             </Avatar>
-                              <span className="text-sm font-medium text-on-surface truncate">{story.assignee.name}</span>
+                            <span className="text-sm font-medium text-on-surface truncate">{story.assignee.name}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-surface-variant border-2 border-dashed border-outline-variant flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs text-on-surface-variant">?</span>
                             </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-full bg-surface-variant border-2 border-dashed border-outline-variant flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs text-on-surface-variant">?</span>
-                              </div>
-                              <span className="text-sm text-on-surface-variant italic truncate">Unassigned</span>
+                            <span className="text-sm text-on-surface-variant italic truncate">Unassigned</span>
                           </div>
                         )}
-                        </div>
-                        
-                        {/* Sprint */}
-                        <div className="w-[100px]">
-                          {story.sprint ? (
-                            <Badge variant="secondary" className="bg-secondary/30 text-secondary-foreground font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap">
-                              {story.sprint}
-                            </Badge>
-                          ) : (
-                            <span className="text-sm text-on-surface-variant italic">-</span>
-                          )}
-                        </div>
-                        
-                        {/* Created */}
-                        <div className="w-[100px] text-sm text-on-surface-variant font-mono">{story.createdDate}</div>
-                        
-                        {/* Actions */}
-                        <div className="w-[60px] flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                      </div>
+
+                      {/* Sprint */}
+                      <div className="w-[100px] flex-shrink-0">
+                        {story.sprint ? (
+                          <Badge variant="secondary" className="bg-secondary/30 text-secondary-foreground font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap">
+                            {story.sprint}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-on-surface-variant italic">-</span>
+                        )}
+                      </div>
+
+                      {/* Created */}
+                      <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant font-mono">{story.createdDate}</div>
+
+                      {/* Actions */}
+                      <div className="w-[60px] flex-shrink-0 flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-surface-variant/50">
-                                <MoreVertical className="h-4 w-4 text-on-surface-variant" />
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-surface-variant/50">
+                              <MoreVertical className="h-4 w-4 text-on-surface-variant" />
                             </Button>
                           </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="elevation-3 rounded-2xl border-outline-variant/50">
-                              <DropdownMenuItem className="rounded-lg">
+                          <DropdownMenuContent align="end" className="elevation-3 rounded-2xl border-outline-variant/50">
+                            <DropdownMenuItem className="rounded-lg">
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                              <DropdownMenuItem className="rounded-lg">
+                            <DropdownMenuItem className="rounded-lg">
                               <Copy className="w-4 h-4 mr-2" />
                               Clone
                             </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive rounded-lg">
+                            <DropdownMenuItem className="text-destructive rounded-lg">
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        </div>
                       </div>
-                    ))}
-                    
-                    {/* Smart Appended Create Row */}
-                    <div className={`flex items-center min-h-[48px] px-6 py-1.5 bg-surface-variant/10 border-t border-outline-variant/20 ${
-                      showQuickCreate ? 'sticky bottom-0' : ''
+                    </div>
+                  ))}
+
+                  {/* Smart Appended Create Row */}
+                  <div className={`flex items-center min-h-[48px] px-6 py-1.5 bg-surface-variant/10 border-t border-outline-variant/20 ${showQuickCreate ? 'sticky bottom-0' : ''
                     }`}>
-                      {!showQuickCreate ? (
-                        // Simple Create Button - Centered
-                        <div className="w-full flex items-center justify-center">
-                          <Button 
-                            onClick={() => setShowQuickCreate(true)}
-                            variant="ghost" 
-                            className="flex items-center gap-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 rounded-2xl px-4 py-2"
+                    {!showQuickCreate ? (
+                      // Simple Create Button - Centered
+                      <div className="w-full flex items-center justify-center">
+                        <Button
+                          onClick={() => setShowQuickCreate(true)}
+                          variant="ghost"
+                          className="flex items-center gap-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 rounded-2xl px-4 py-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          <span className="text-sm font-medium">Create</span>
+                        </Button>
+                      </div>
+                    ) : (
+                      // Full Create Form - Aligned with columns
+                      <>
+                        {/* Empty checkbox space */}
+                        <div className="w-[60px] flex-shrink-0 flex items-center justify-start">
+                          <Button
+                            onClick={() => setShowQuickCreate(false)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 w-3 p-0 rounded-full hover:bg-surface-variant/50"
                           >
-                            <Plus className="h-4 w-4" />
-                            <span className="text-sm font-medium">Create</span>
+                            <X className="h-3 w-3 text-on-surface-variant" />
                           </Button>
                         </div>
-                      ) : (
-                        // Full Create Form - Aligned with columns
-                        <>
-                          {/* Empty checkbox space */}
-                          <div className="w-[60px]"></div>
-                          
-                          {/* Type Selector */}
-                          <div className="w-[80px] flex items-center justify-start">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-surface-variant/50">
-                                  <div className={`p-1.5 rounded-full ${
-                                    quickCreateType === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
+
+                        {/* Type Selector */}
+                        <div className="w-[80px] flex-shrink-0 flex items-center justify-start">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="p-1 rounded-full hover:bg-surface-variant/50">
+                                <div className={`p-1.5 rounded-full ${quickCreateType === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
                                     quickCreateType === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                                    'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                                      'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                                   }`}>
-                                    {typeIcons[quickCreateType]}
-                        </div>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent className="elevation-3 rounded-2xl border-outline-variant/50">
-                                <DropdownMenuItem onClick={() => setQuickCreateType("story")} className="rounded-lg">
-                                  <div className="flex items-center gap-2">
-                                    <div className="p-1 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
-                                      <Bookmark size={12} />
-                      </div>
-                                    Story
-                    </div>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setQuickCreateType("bug")} className="rounded-lg">
-                    <div className="flex items-center gap-2">
-                                    <div className="p-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400">
-                                      <Bug size={12} />
-                    </div>
-                                    Bug
-                  </div>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setQuickCreateType("task")} className="rounded-lg">
-                                  <div className="flex items-center gap-2">
-                                    <div className="p-1 rounded-full bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400">
-                                      <SquareCheck size={12} />
-            </div>
-                                    Task
+                                  {typeIcons[quickCreateType]}
+                                </div>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="elevation-3 rounded-2xl border-outline-variant/50">
+                              <DropdownMenuItem onClick={() => setQuickCreateType("story")} className="rounded-lg">
+                                <div className="flex items-center gap-2">
+                                  <div className="p-1 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                                    <Bookmark size={12} />
                                   </div>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                          
-                          {/* Empty Key space */}
-                          <div className="w-[100px] text-sm text-on-surface-variant italic">Auto</div>
-                          
-                          {/* Title Input */}
-                          <div className="w-[300px] pr-4">
-                            <Input
-                              placeholder="Enter work item title..."
-                              value={quickCreateTitle}
-                              onChange={(e) => setQuickCreateTitle(e.target.value)}
-                              onKeyPress={handleQuickCreateKeyPress}
-                              className="bg-surface border-outline-variant/50 rounded-2xl text-sm focus:border-primary"
-                              autoFocus
-                            />
-                          </div>
-                          
-                          {/* Default values placeholders */}
-                          <div className="w-[120px] text-sm text-on-surface-variant italic">To Do</div>
-                          <div className="w-[120px] text-sm text-on-surface-variant italic">Medium</div>
-                          <div className="w-[80px] text-sm text-on-surface-variant italic text-center">0</div>
-                          <div className="w-[140px] text-sm text-on-surface-variant italic">Unassigned</div>
-                          <div className="w-[100px] text-sm text-on-surface-variant italic">-</div>
-                          <div className="w-[100px] text-sm text-on-surface-variant italic">Today</div>
-                          
-                          {/* Action Buttons */}
-                          <div className="w-[60px] flex items-center justify-end gap-1">
-                            <Button 
-                              onClick={() => setShowQuickCreate(false)}
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-7 w-7 p-0 rounded-full hover:bg-surface-variant/50"
-                            >
-                              <X className="h-3 w-3 text-on-surface-variant" />
-                            </Button>
-                            <Button 
-                              onClick={handleQuickCreate}
-                              disabled={!quickCreateTitle.trim()}
-                              size="sm" 
-                              className="h-7 w-7 p-0 rounded-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <Plus className="h-3 w-3 text-primary-foreground" />
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                                  Story
+                                </div>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setQuickCreateType("bug")} className="rounded-lg">
+                                <div className="flex items-center gap-2">
+                                  <div className="p-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                                    <Bug size={12} />
+                                  </div>
+                                  Bug
+                                </div>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setQuickCreateType("task")} className="rounded-lg">
+                                <div className="flex items-center gap-2">
+                                  <div className="p-1 rounded-full bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                    <SquareCheck size={12} />
+                                  </div>
+                                  Task
+                                </div>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+
+                        {/* Empty Key space */}
+                        <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant italic">Auto</div>
+
+                        {/* Title Input */}
+                        <div className="flex-1 min-w-[200px] pr-4">
+                          <Input
+                            placeholder="Enter work item title..."
+                            value={quickCreateTitle}
+                            onChange={(e) => setQuickCreateTitle(e.target.value)}
+                            onKeyPress={handleQuickCreateKeyPress}
+                            className="bg-surface border-outline-variant/50 rounded-2xl text-sm focus:border-primary"
+                            autoFocus
+                          />
+                        </div>
+
+                        {/* Default values placeholders */}
+                        <div className="w-[120px] flex-shrink-0 text-sm text-on-surface-variant italic">To Do</div>
+                        <div className="w-[120px] flex-shrink-0 text-sm text-on-surface-variant italic">Medium</div>
+                        <div className="w-[80px] flex-shrink-0 text-sm text-on-surface-variant italic text-center">0</div>
+                        <div className="w-[140px] flex-shrink-0 text-sm text-on-surface-variant italic">Unassigned</div>
+                        <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant italic">-</div>
+                        <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant italic">Today</div>
+
+                        {/* Action Buttons */}
+                        <div className="w-[60px] flex-shrink-0 flex items-center justify-end gap-1">
+
+                          <Button
+                            onClick={handleQuickCreate}
+                            disabled={!quickCreateTitle.trim()}
+                            size="sm"
+                            className="h-7 w-7 p-0 rounded-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Plus className="h-3 w-3 text-primary-foreground" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
         </div>
 
         {selectedStory && (
           <>
             {/* Resizer */}
-            <div 
+            <div
               className="w-1 bg-outline-variant/30 hover:bg-primary/50 cursor-col-resize transition-colors flex items-center justify-center group"
               onMouseDown={handleMouseDown}
             >
               <div className="w-1 h-8 bg-outline-variant/50 group-hover:bg-primary/70 rounded-full transition-colors"></div>
             </div>
-            
-                                                <div className="space-y-4" style={{ width: workItemWidth }}>
-            <div className="flex items-center justify-between">
+
+            <div className="space-y-4" style={{ width: workItemWidth }}>
+              <div className="flex items-center justify-between">
                 <h2 className="text-lg font-medium text-on-surface">Work Item Details</h2>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedStory(null)} className="rounded-full hover:bg-surface-variant/50">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
 
-            <div className="bg-surface rounded-3xl overflow-hidden border border-outline-variant/30">
-              {/* Header Section */}
-              <div className="bg-surface-variant/20 px-4 py-3 border-b border-outline-variant/20 flex-shrink-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`p-1.5 rounded-full ${
-                    selectedStory.type === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                    selectedStory.type === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                    'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                  }`}>
-                    {typeIcons[selectedStory.type as keyof typeof typeIcons]}
-                  </div>
-                  <Link
-                    href={`/project/${params.id}/work-items/${selectedStory.id}`}
-                    className="text-primary hover:underline font-semibold text-sm"
-                  >
-                    {selectedStory.id}
-                  </Link>
-                  <div className="flex items-center gap-2 ml-auto">
-                    <Badge 
-                      variant="outline" 
-                      className={`${priorityColors[selectedStory.priority as keyof typeof priorityColors]} font-medium px-2 py-0.5 rounded-full text-xs`}
+              <div className="bg-surface rounded-3xl overflow-hidden border border-outline-variant/30">
+                {/* Header Section */}
+                <div className="bg-surface-variant/20 px-4 py-3 border-b border-outline-variant/20 flex-shrink-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`p-1.5 rounded-full ${selectedStory.type === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
+                        selectedStory.type === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                          'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                      }`}>
+                      {typeIcons[selectedStory.type as keyof typeof typeIcons]}
+                    </div>
+                    <Link
+                      href={`/project/${params.id}/work-items/${selectedStory.id}`}
+                      className="text-primary hover:underline font-semibold text-sm"
                     >
-                      {selectedStory.priority.toUpperCase()}
-                    </Badge>
-                    <Badge 
-                      variant="outline" 
-                      className={`${statusColors[selectedStory.status as keyof typeof statusColors]} font-medium px-2 py-0.5 rounded-full text-xs`}
-                    >
-                      {selectedStory.status.replace("_", " ").toUpperCase()}
-                    </Badge>
-                </div>
-                </div>
-                <h3 className="text-base font-medium text-on-surface leading-tight">{selectedStory.title}</h3>
+                      {selectedStory.id}
+                    </Link>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <Badge
+                        variant="outline"
+                        className={`${priorityColors[selectedStory.priority as keyof typeof priorityColors]} font-medium px-2 py-0.5 rounded-full text-xs`}
+                      >
+                        {selectedStory.priority.toUpperCase()}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`${statusColors[selectedStory.status as keyof typeof statusColors]} font-medium px-2 py-0.5 rounded-full text-xs`}
+                      >
+                        {selectedStory.status.replace("_", " ").toUpperCase()}
+                      </Badge>
+                    </div>
                   </div>
-
-              {/* Content Section */}
-              <div className="p-4 space-y-4">
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-on-surface">Description</Label>
-                  <div className="bg-surface-variant/30 rounded-2xl p-3 border border-outline-variant/50">
-                    <p className="text-sm text-on-surface-variant leading-relaxed">
-                      {selectedStory.description}
-                    </p>
-                  </div>
+                  <h3 className="text-base font-medium text-on-surface leading-tight">{selectedStory.title}</h3>
                 </div>
 
-                {/* Metadata Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Story Points */}
+                {/* Content Section */}
+                <div className="p-4 space-y-4">
+                  {/* Description */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-on-surface">Story Points</Label>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary/10 text-primary font-bold rounded-full text-sm flex items-center justify-center">
-                        {selectedStory.storyPoints}
-                      </div>
-                      <span className="text-xs text-on-surface-variant">Points</span>
+                    <Label className="text-sm font-medium text-on-surface">Description</Label>
+                    <div className="bg-surface-variant/30 rounded-2xl p-3 border border-outline-variant/50">
+                      <p className="text-sm text-on-surface-variant leading-relaxed">
+                        {selectedStory.description}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Assignee */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-on-surface">Assignee</Label>
-                    {selectedStory.assignee ? (
-                      <div className="flex items-center gap-2">
-                        <Avatar className="w-8 h-8 ring-2 ring-outline-variant/50">
-                          <AvatarImage src={selectedStory.assignee.avatar || "/placeholder.svg"} alt={selectedStory.assignee.name} />
-                          <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
-                            {selectedStory.assignee.name
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                  <div>
-                          <div className="text-sm font-medium text-on-surface">{selectedStory.assignee.name}</div>
-                          <div className="text-xs text-on-surface-variant">Assigned</div>
+                  {/* Metadata Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Story Points */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-on-surface">Story Points</Label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/10 text-primary font-bold rounded-full text-sm flex items-center justify-center">
+                          {selectedStory.storyPoints}
                         </div>
+                        <span className="text-xs text-on-surface-variant">Points</span>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-surface-variant border-2 border-dashed border-outline-variant flex items-center justify-center">
-                          <span className="text-xs text-on-surface-variant">?</span>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-on-surface-variant">Unassigned</div>
-                          <div className="text-xs text-on-surface-variant">No assignee</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
 
-                {/* Sprint & Labels */}
-                <div className="space-y-3">
-                <div>
-                    <Label className="text-sm font-medium text-on-surface">Sprint</Label>
-                    <div className="mt-1">
-                      {selectedStory.sprint ? (
-                        <Badge variant="secondary" className="bg-secondary/50 text-secondary-foreground font-medium px-3 py-1 rounded-full text-xs">
-                          {selectedStory.sprint}
-                        </Badge>
+                    {/* Assignee */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-on-surface">Assignee</Label>
+                      {selectedStory.assignee ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-8 h-8 ring-2 ring-outline-variant/50">
+                            <AvatarImage src={selectedStory.assignee.avatar || "/placeholder.svg"} alt={selectedStory.assignee.name} />
+                            <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+                              {selectedStory.assignee.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-sm font-medium text-on-surface">{selectedStory.assignee.name}</div>
+                            <div className="text-xs text-on-surface-variant">Assigned</div>
+                          </div>
+                        </div>
                       ) : (
-                        <span className="text-xs text-on-surface-variant italic bg-surface-variant/30 px-3 py-1 rounded-full">Not assigned</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-surface-variant border-2 border-dashed border-outline-variant flex items-center justify-center">
+                            <span className="text-xs text-on-surface-variant">?</span>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-on-surface-variant">Unassigned</div>
+                            <div className="text-xs text-on-surface-variant">No assignee</div>
+                          </div>
+                        </div>
                       )}
                     </div>
-                </div>
+                  </div>
 
-                <div>
-                    <Label className="text-sm font-medium text-on-surface">Labels</Label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {selectedStory.labels.map((label: string) => (
-                        <Badge key={label} variant="secondary" className="text-xs rounded-full px-2 py-0.5 bg-surface-variant/50 text-on-surface-variant border border-outline-variant/50">
-                        {label}
-                      </Badge>
-                    ))}
+                  {/* Sprint & Labels */}
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium text-on-surface">Sprint</Label>
+                      <div className="mt-1">
+                        {selectedStory.sprint ? (
+                          <Badge variant="secondary" className="bg-secondary/50 text-secondary-foreground font-medium px-3 py-1 rounded-full text-xs">
+                            {selectedStory.sprint}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-on-surface-variant italic bg-surface-variant/30 px-3 py-1 rounded-full">Not assigned</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-on-surface">Labels</Label>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedStory.labels.map((label: string) => (
+                          <Badge key={label} variant="secondary" className="text-xs rounded-full px-2 py-0.5 bg-surface-variant/50 text-on-surface-variant border border-outline-variant/50">
+                            {label}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-3 border-t border-outline-variant/20">
+                    <Link href={`/project/${params.id}/work-items/${selectedStory.id}`} className="flex-1">
+                      <Button size="sm" className="w-full rounded-full elevation-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs">
+                        <Edit className="w-3 h-3 mr-2" />
+                        View Details
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm" className="rounded-full border-outline-variant bg-surface hover:bg-surface-variant/50 text-xs">
+                      <Copy className="w-3 h-3 mr-2" />
+                      Clone
+                    </Button>
                   </div>
                 </div>
-                        </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-3 border-t border-outline-variant/20">
-                  <Link href={`/project/${params.id}/work-items/${selectedStory.id}`} className="flex-1">
-                    <Button size="sm" className="w-full rounded-full elevation-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs">
-                      <Edit className="w-3 h-3 mr-2" />
-                      View Details
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" className="rounded-full border-outline-variant bg-surface hover:bg-surface-variant/50 text-xs">
-                    <Copy className="w-3 h-3 mr-2" />
-                    Clone
-                  </Button>
-                </div>
-          </div>
-            </div>
+              </div>
             </div>
           </>
         )}
