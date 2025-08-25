@@ -77,7 +77,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
           {navigation.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link key={item.name} href={item.href}>
+              <Link key={item.name} href={item.href} className="block">
                 <Button
                   variant={isActive ? "default" : "ghost"}
                   className={cn(
@@ -94,7 +94,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
             )
           })}
 
-          <div className="mt-4">
+          <div className="mt-1">
             <Button
               variant="ghost"
               onClick={() => setIsProjectsExpanded(!isProjectsExpanded)}
@@ -110,7 +110,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
                 {sidebarProjects.map((project) => {
                   const isActive = pathname.startsWith(`/project/${project.id}`)
                   return (
-                    <Link key={project.id} href={`/project/${project.id}`}>
+                    <Link key={project.id} href={`/project/${project.id}`} className="block">
                       <Button
                         variant={isActive ? "default" : "ghost"}
                         className={cn(
@@ -137,7 +137,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
                 })}
 
                 {hasMoreProjects && (
-                  <Link href="/projects">
+                  <Link href="/projects" className="block">
                     <Button
                       variant="ghost"
                       className="w-full justify-start gap-3 h-9 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
