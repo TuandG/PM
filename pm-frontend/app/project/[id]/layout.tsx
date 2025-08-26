@@ -12,13 +12,11 @@ export default function ProjectLayout({ children, params }: ProjectLayoutProps) 
   const { id } = resolvedParams as { id: string };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex flex-col">
-        <div className="sticky top-0 z-50 bg-background border-b border-border">
-          <ProjectNav projectId={id} />
-        </div>
-        <main className="flex-1">{children}</main>
+    <div className="bg-background">
+      <div className="sticky top-0 z-50 bg-background border-b border-border">
+        <ProjectNav projectId={id} />
       </div>
+      <main>{children}</main>
     </div>
   );
 }

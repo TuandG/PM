@@ -19,6 +19,7 @@ import {
   Bug,
   BookOpen,
   CheckSquare,
+  FileText,
 } from "lucide-react"
 
 export default function ProjectSummary({ params }: { params: { id: string } }) {
@@ -44,8 +45,8 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
       {/* Header Section - Material 3 Style */}
       <div className="flex items-start justify-between gap-6">
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-on-surface tracking-tight">E-commerce Platform</h1>
-          <p className="text-on-surface-variant mt-2 text-base leading-relaxed max-w-2xl">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">E-commerce Platform</h1>
+          <p className="text-muted-foreground mt-2 text-base leading-relaxed max-w-2xl">
             Next-generation e-commerce solution with advanced analytics and AI-powered recommendations
           </p>
           <div className="flex items-center gap-4 mt-4 flex-wrap">
@@ -53,22 +54,22 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
               <CheckCircle className="w-3 h-3 mr-1.5" />
               Active
             </Badge>
-            <div className="flex items-center text-sm text-on-surface-variant">
+            <div className="flex items-center text-sm text-muted-foreground">
               <Calendar className="w-4 h-4 mr-1.5" />
               Started Oct 15, 2024
             </div>
-            <div className="flex items-center text-sm text-on-surface-variant">
+            <div className="flex items-center text-sm text-muted-foreground">
               <Clock className="w-4 h-4 mr-1.5" />
               Due Dec 31, 2024
             </div>
           </div>
         </div>
         <div className="flex gap-3 flex-shrink-0">
-          <Button variant="outline" className="rounded-full bg-transparent hover:bg-surface-variant/50">
+          <Button variant="outline" className="rounded-full bg-transparent hover:bg-accent">
             <GitBranch className="w-4 h-4 mr-2" />
             View Repository
           </Button>
-          <Button className="rounded-full elevation-2 bg-primary hover:bg-primary/90">
+          <Button className="rounded-full">
             <MessageSquare className="w-4 h-4 mr-2" />
             Team Chat
           </Button>
@@ -142,7 +143,7 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
       {/* Main Content Grid - Equal Width Cards */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Current Sprint Card - Material 3 Style */}
-        <Card className="bg-surface-variant/20 rounded-3xl border-0">
+        <Card className="bg-surface-variant/20 rounded-3xl border-0 flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-3 text-on-surface">
               <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20">
@@ -151,7 +152,7 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
               Current Sprint - Sprint 3
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0 flex flex-col h-full">
+          <CardContent className="pt-0 flex flex-col flex-1">
             <div className="flex justify-between items-center mb-3">
               <span className="text-sm font-medium text-on-surface">Sprint Goal</span>
               <Badge className="bg-surface-variant/50 text-on-surface-variant rounded-full px-3 py-1">
@@ -191,7 +192,7 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
         </Card>
 
         {/* Recent Activity Card - Material 3 Style - Equal Size */}
-        <Card className="bg-surface-variant/20 rounded-3xl border-0">
+        <Card className="bg-surface-variant/20 rounded-3xl border-0 flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-3 text-on-surface">
               <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/20">
@@ -200,7 +201,7 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
               Recent Activity
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 flex flex-col flex-1">
             <div className="space-y-3">
               {recentActivities.map((activity, index) => (
                 <div key={index} className="flex items-start gap-3 p-2 rounded-2xl hover:bg-surface-variant/30 transition-colors">
@@ -230,7 +231,7 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
       {/* Additional Cards Row - Burndown Chart & Work Types */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Burndown Chart Card - Material 3 Style */}
-        <Card className="bg-surface-variant/20 rounded-3xl border-0">
+        <Card className="bg-surface-variant/20 rounded-3xl border-0 flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-3 text-on-surface">
               <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20">
@@ -239,20 +240,20 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
               Sprint Burndown Chart
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
+          <CardContent className="pt-0 flex flex-col flex-1">
+            <div className="flex flex-col h-full">
+              <div className="flex justify-between items-center text-sm mb-4">
                 <span className="text-on-surface">Sprint Progress</span>
                 <span className="text-on-surface-variant">Day 10 of 14</span>
               </div>
-              <div className="h-48 bg-surface-variant/30 rounded-2xl flex items-center justify-center">
+              <div className="flex-1 bg-surface-variant/30 rounded-2xl flex items-center justify-center min-h-[12rem]">
                 <div className="text-center">
                   <BarChart3 className="w-10 h-10 text-on-surface-variant mx-auto mb-2" />
                   <div className="text-sm text-on-surface-variant">Sprint burndown visualization</div>
                   <div className="text-xs text-on-surface-variant mt-1">Interactive chart would display here</div>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3 text-center text-xs">
+              <div className="grid grid-cols-3 gap-3 text-center text-xs mt-4">
                 <div>
                   <div className="font-semibold text-on-surface">32</div>
                   <div className="text-on-surface-variant">Ideal</div>
@@ -271,7 +272,7 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
         </Card>
 
         {/* Work Types Distribution Card - Material 3 Style */}
-        <Card className="bg-surface-variant/20 rounded-3xl border-0">
+        <Card className="bg-surface-variant/20 rounded-3xl border-0 flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-3 text-on-surface">
               <div className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/20">
@@ -280,14 +281,14 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
               Work Types Distribution
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              <div className="text-center">
+          <CardContent className="pt-0 flex flex-col flex-1">
+            <div className="flex flex-col h-full">
+              <div className="text-center mb-4">
                 <div className="text-2xl font-bold text-on-surface">{totalWorkItems}</div>
                 <div className="text-sm text-on-surface-variant">Total Work Items</div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 flex-1">
                 {workTypeData.map((item, index) => {
                   const percentage = ((item.count / totalWorkItems) * 100).toFixed(1)
                   return (
@@ -310,7 +311,7 @@ export default function ProjectSummary({ params }: { params: { id: string } }) {
                 })}
               </div>
 
-              <div className="pt-2">
+              <div className="mt-auto pt-4">
                 <div className="grid grid-cols-3 gap-3 text-center text-xs">
                   <div>
                     <div className="font-semibold text-blue-600 dark:text-blue-400">49%</div>

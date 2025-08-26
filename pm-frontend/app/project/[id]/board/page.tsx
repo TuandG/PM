@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Plus } from "lucide-react"
+import { MoreHorizontal, Plus, Kanban } from "lucide-react"
 import { use } from "react"
 
 const columns = [

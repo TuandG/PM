@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { UserPlus, Search, Filter, MoreHorizontal, Mail, Trash2, Clock, X, RefreshCw } from "lucide-react"
+import { UserPlus, Search, Filter, MoreHorizontal, Mail, Trash2, Clock, X, RefreshCw, Users } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -239,8 +239,8 @@ export default function MembersPage() {
       <div className="flex-1 space-y-6 p-2 sm:p-6 w-full">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-on-surface">Project Members</h1>
-            <p className="text-on-surface-variant mt-2 text-base leading-relaxed">Manage team members and their roles</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Project Members</h1>
+            <p className="text-muted-foreground mt-2 text-base leading-relaxed">Manage team members and their roles</p>
           </div>
 
           <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>

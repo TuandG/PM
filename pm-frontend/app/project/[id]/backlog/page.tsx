@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import React, { useState, useRef, useCallback, use } from "react"
 import { Plus, Search, Filter, Grid, List, X, MoreVertical, Edit, Copy, Trash2, BookMarked, Bookmark, Bug, Check, SquareCheck, GripVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -114,7 +114,8 @@ const typeIcons = {
   task: <SquareCheck size={16} />,
 }
 
-export default function ProjectBacklogPage({ params }: { params: { id: string } }) {
+export default function ProjectBacklogPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [selectedStory, setSelectedStory] = useState<any>(null)
 
   const [selectedStories, setSelectedStories] = useState<string[]>([])
