@@ -43,7 +43,7 @@ const messages = [
 export default function ProjectCommunicationPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   return (
-    <div className="p-6">
+    <div className="px-6 py-6 w-full max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Team Communication</h1>
         <p className="text-muted-foreground">Collaborate with your team members</p>

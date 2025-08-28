@@ -21,6 +21,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface ProjectNavProps {
   projectId: string
+  projectName?: string
 }
 
 const projectNavigation = [
@@ -71,10 +72,16 @@ const projectNavigation = [
   },
 ]
 
-export function ProjectNav({ projectId }: ProjectNavProps) {
+export function ProjectNav({ projectId, projectName }: ProjectNavProps) {
   const pathname = usePathname()
   const [visibleItems, setVisibleItems] = useState<number>(projectNavigation.length)
   const containerRef = useRef<HTMLDivElement>(null)
+  const displayName = (projectName && projectName.trim()) || projectId
+  const getInitials = (name: string) => {
+    const parts = name.replace(/[-_]/g, " ").split(" ").filter(Boolean)
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
 
   useEffect(() => {
     const checkOverflow = () => {
@@ -134,56 +141,72 @@ export function ProjectNav({ projectId }: ProjectNavProps) {
 
   return (
     <div className="bg-background">
-      <div ref={containerRef} className="flex items-center gap-1 px-6 py-3">
-        {visibleNavItems.map((item) => {
-          const href = `/project/${projectId}${item.href}`
-          const isActive = pathname === href
+      <div className="px-6">
+        <div className="w-full flex items-center justify-between py-3 gap-3">
+          {/* Project identity (fixed width to avoid shifting) */}
+          <div className="flex items-center gap-3 min-w-0 w-56 flex-shrink-0 -ml-1">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-semibold">
+              {getInitials(displayName)}
+            </div>
+            <div className="leading-tight min-w-0">
+              <div className="text-sm font-semibold text-foreground truncate" title={displayName}>{displayName}</div>
+              <div className="text-[11px] text-muted-foreground">Project</div>
+            </div>
+          </div>
 
-          return (
-            <Link key={item.name} href={href}>
-              <Button
-                data-nav-item
-                variant={isActive ? "default" : "ghost"}
-                size="sm"
-                className={cn(
-                  "gap-2 whitespace-nowrap",
-                  isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                )}
-              >
-                <item.icon className="w-4 h-4" />
-                {item.name}
-              </Button>
-            </Link>
-          )
-        })}
+          {/* Navigation items with fixed starting point */}
+          <div ref={containerRef} className="flex items-center gap-1 min-w-0 flex-1 justify-end">
+            {visibleNavItems.map((item) => {
+              const href = `/project/${projectId}${item.href}`
+              const isActive = pathname === href
 
-        {hiddenNavItems.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <MoreHorizontal className="w-4 h-4" />
-                More
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {hiddenNavItems.map((item) => {
-                const href = `/project/${projectId}${item.href}`
-                const isActive = pathname === href
+              return (
+                <Link key={item.name} href={href}>
+                  <Button
+                    data-nav-item
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "gap-2 whitespace-nowrap",
+                      isActive
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.name}
+                  </Button>
+                </Link>
+              )
+            })}
 
-                return (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link href={href} className={cn("flex items-center gap-2", isActive && "bg-accent")}>
-                      <item.icon className="w-4 h-4" />
-                      {item.name}
-                    </Link>
-                  </DropdownMenuItem>
-                )
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+            {hiddenNavItems.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <MoreHorizontal className="w-4 h-4" />
+                    More
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {hiddenNavItems.map((item) => {
+                    const href = `/project/${projectId}${item.href}`
+                    const isActive = pathname === href
+
+                    return (
+                      <DropdownMenuItem key={item.name} asChild>
+                        <Link href={href} className={cn("flex items-center gap-2", isActive && "bg-accent")}>
+                          <item.icon className="w-4 h-4" />
+                          {item.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

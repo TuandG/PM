@@ -15,7 +15,7 @@ export default function ProjectLayout({ children, params }: ProjectLayoutProps) 
     <div className="min-h-screen bg-background">
       <div className="flex flex-col">
         <div className="sticky top-0 z-50 bg-background border-b border-border">
-          <ProjectNav projectId={id} />
+          <ProjectNav projectId={id} projectName="E-commerce Platform" />
         </div>
         <main className="flex-1">{children}</main>
       </div>

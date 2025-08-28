@@ -6,30 +6,47 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { 
   Search, 
-  Filter, 
   Plus, 
   X, 
   GripVertical,
   Target,
   Users,
-  Calendar,
-  Clock,
   AlertTriangle,
   CheckCircle2,
   Play,
   Save,
   MoreVertical,
   ArrowLeft,
-  Zap
+  Zap,
+  ChevronRight
 } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import NextLink from "next/link"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Separator } from "@/components/ui/separator"
+
+// Types
+type Assignee = { name: string; avatar: string }
+type Story = {
+  id: string
+  title: string
+  storyPoints: number
+  priority: "high" | "medium" | "low"
+  assignee: Assignee | null
+  labels?: string[]
+  description?: string
+  acceptanceCriteria?: string[]
+}
+
+// Thêm type để theo dõi nguồn gốc của story
+type StoryWithSource = Story & {
+  source: 'backlog' | 'sprint'
+  sourceSprintId?: number // ID của sprint nếu story đến từ sprint
+}
 
 // Mock data
 const sprint = {
@@ -44,7 +61,7 @@ const sprint = {
   status: "planned"
 }
 
-const backlogStories = [
+const backlogStories: Story[] = [
   {
     id: "US-003",
     title: "Password Reset Functionality",
@@ -107,7 +124,7 @@ const backlogStories = [
   }
 ]
 
-const sprintStories = [
+const sprintStories: Story[] = [
   {
     id: "US-015",
     title: "Payment Gateway Integration", 
@@ -140,6 +157,74 @@ const sprintStories = [
   }
 ]
 
+// Mock past and upcoming sprints with stories
+type SprintListItem = {
+  id: number
+  name: string
+  startDate: string
+  endDate: string
+  stories: Story[]
+}
+
+const sprintsList: SprintListItem[] = [
+  {
+    id: 3,
+    name: "Sprint 3",
+    startDate: "March 1, 2024",
+    endDate: "March 15, 2024",
+    stories: [
+      {
+        id: "US-010",
+        title: "Wishlist Feature",
+        storyPoints: 5,
+        priority: "medium",
+        assignee: { name: "Alex Chen", avatar: "/placeholder.svg?height=32&width=32" },
+        labels: ["frontend"],
+      },
+      {
+        id: "US-011",
+        title: "Coupon Codes",
+        storyPoints: 3,
+        priority: "low",
+        assignee: null,
+        labels: ["checkout"],
+      }
+    ]
+  },
+  {
+    id: 2,
+    name: "Sprint 2",
+    startDate: "Feb 15, 2024",
+    endDate: "Feb 29, 2024",
+    stories: [
+      {
+        id: "US-007",
+        title: "Profile Avatar Upload",
+        storyPoints: 3,
+        priority: "medium",
+        assignee: { name: "Sarah Wilson", avatar: "/placeholder.svg?height=32&width=32" },
+        labels: ["profile"],
+      }
+    ]
+  },
+  {
+    id: 1,
+    name: "Sprint 1",
+    startDate: "Feb 1, 2024",
+    endDate: "Feb 14, 2024",
+    stories: [
+      {
+        id: "US-001",
+        title: "User Sign Up",
+        storyPoints: 5,
+        priority: "high",
+        assignee: { name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
+        labels: ["authentication"],
+      }
+    ]
+  }
+]
+
 const teamMembers = [
   { id: 1, name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
   { id: 2, name: "Jane Smith", avatar: "/placeholder.svg?height=32&width=32" },
@@ -160,8 +245,13 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
   const resolvedParams = use(params)
   const [backlogSearch, setBacklogSearch] = useState('')
   const [selectedStories, setSelectedStories] = useState<string[]>([])
-  const [committedStories, setCommittedStories] = useState(sprintStories)
-  const [availableStories, setAvailableStories] = useState(backlogStories)
+  const [committedStories, setCommittedStories] = useState<StoryWithSource[]>(
+    sprintStories.map(story => ({ ...story, source: 'backlog' as const }))
+  )
+  const [availableStories, setAvailableStories] = useState<StoryWithSource[]>(
+    backlogStories.map(story => ({ ...story, source: 'backlog' as const }))
+  )
+  const [sprintsState, setSprintsState] = useState<SprintListItem[]>(sprintsList)
   const [selectedStory, setSelectedStory] = useState<any>(null)
   const [draggedStory, setDraggedStory] = useState<any>(null)
 
@@ -169,6 +259,12 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
     story.title.toLowerCase().includes(backlogSearch.toLowerCase()) ||
     story.id.toLowerCase().includes(backlogSearch.toLowerCase())
   )
+
+  // Tạo danh sách tất cả stories có thể chọn (từ backlog và sprints)
+  const allSelectableStories = [
+    ...availableStories,
+    ...sprintsState.flatMap(sp => sp.stories)
+  ]
 
   const totalCommittedPoints = committedStories.reduce((sum, story) => sum + story.storyPoints, 0)
   const isOverCapacity = totalCommittedPoints > sprint.capacity
@@ -204,8 +300,23 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
   const handleDropToSprint = (e: React.DragEvent) => {
     e.preventDefault()
     if (draggedStory && !committedStories.find(s => s.id === draggedStory.id)) {
-      setCommittedStories(prev => [...prev, draggedStory])
+      // Xác định nguồn gốc của story được kéo
+      const sourceSprint = sprintsState.find(sp => sp.stories.some(s => s.id === draggedStory.id))
+      const storyWithSource: StoryWithSource = {
+        ...draggedStory,
+        source: sourceSprint ? 'sprint' as const : 'backlog' as const,
+        sourceSprintId: sourceSprint?.id
+      }
+      
+      setCommittedStories(prev => [...prev, storyWithSource])
       setAvailableStories(prev => prev.filter(s => s.id !== draggedStory.id))
+      setSprintsState(prev => prev.map(sp => ({
+        ...sp,
+        stories: sp.stories.filter(s => s.id !== draggedStory.id)
+      })))
+      
+      // Tự động uncheck story khi kéo sang sprint
+      setSelectedStories(prev => prev.filter(id => id !== draggedStory.id))
     }
     setDraggedStory(null)
   }
@@ -213,8 +324,23 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
   const handleDropToBacklog = (e: React.DragEvent) => {
     e.preventDefault()
     if (draggedStory && !availableStories.find(s => s.id === draggedStory.id)) {
-      setAvailableStories(prev => [...prev, draggedStory])
+      // Xác định nguồn gốc của story được kéo
+      const sourceSprint = sprintsState.find(sp => sp.stories.some(s => s.id === draggedStory.id))
+      const storyWithSource: StoryWithSource = {
+        ...draggedStory,
+        source: sourceSprint ? 'sprint' as const : 'backlog' as const,
+        sourceSprintId: sourceSprint?.id
+      }
+      
+      setAvailableStories(prev => [...prev, storyWithSource])
       setCommittedStories(prev => prev.filter(s => s.id !== draggedStory.id))
+      setSprintsState(prev => prev.map(sp => ({
+        ...sp,
+        stories: sp.stories.filter(s => s.id !== draggedStory.id)
+      })))
+      
+      // Tự động uncheck story khi kéo về backlog
+      setSelectedStories(prev => prev.filter(id => id !== draggedStory.id))
     }
     setDraggedStory(null)
   }
@@ -223,14 +349,51 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
     const story = committedStories.find(s => s.id === storyId)
     if (story) {
       setCommittedStories(prev => prev.filter(s => s.id !== storyId))
-      setAvailableStories(prev => [...prev, story])
+      
+      // Trả story về đúng nguồn gốc ban đầu
+      if (story.source === 'sprint' && story.sourceSprintId) {
+        // Trả về sprint ban đầu
+        setSprintsState(prev => prev.map(sp => 
+          sp.id === story.sourceSprintId 
+            ? { ...sp, stories: [...sp.stories, story] }
+            : sp
+        ))
+      } else {
+        // Trả về backlog
+        setAvailableStories(prev => [...prev, story])
+      }
     }
   }
 
   const addSelectedToSprint = () => {
-    const storiesToAdd = availableStories.filter(story => selectedStories.includes(story.id))
-    setCommittedStories(prev => [...prev, ...storiesToAdd])
+    const fromBacklog = availableStories.filter(story => selectedStories.includes(story.id))
+    const fromSprints = sprintsState.flatMap(sp => sp.stories.filter(story => selectedStories.includes(story.id)))
+    
+    // Tạo stories với thông tin nguồn gốc
+    const storiesToAdd: StoryWithSource[] = [
+      ...fromBacklog.map(story => ({ ...story, source: 'backlog' as const })),
+      ...fromSprints.map(story => ({ 
+        ...story, 
+        source: 'sprint' as const,
+        sourceSprintId: sprintsState.find(sp => sp.stories.some(s => s.id === story.id))?.id
+      }))
+    ]
+    
+    if (storiesToAdd.length === 0) return
+    
+    setCommittedStories(prev => {
+      const existingIds = new Set(prev.map(s => s.id))
+      const toAppend = storiesToAdd.filter(s => !existingIds.has(s.id))
+      return [...prev, ...toAppend]
+    })
+    
     setAvailableStories(prev => prev.filter(story => !selectedStories.includes(story.id)))
+    setSprintsState(prev => prev.map(sp => ({
+      ...sp,
+      stories: sp.stories.filter(story => !selectedStories.includes(story.id))
+    })))
+    
+    // Tự động uncheck tất cả stories trước khi xóa selectedStories
     setSelectedStories([])
   }
 
@@ -248,7 +411,7 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="px-6 py-6 w-full max-w-7xl mx-auto">
       <div className="p-2 sm:p-4 max-w-full xl:max-w-[1600px] mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -281,25 +444,12 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
 
         {/* 3-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
-          {/* Left Column - Backlog (30%) */}
-          <div className="lg:col-span-4 bg-surface rounded-3xl overflow-hidden">
-            <div className="bg-muted/30 px-4 py-3 border-b border-outline-variant/20">
-              <h3 className="text-lg font-medium text-foreground mb-3">Product Backlog</h3>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search stories..."
-                  value={backlogSearch}
-                  onChange={(e) => setBacklogSearch(e.target.value)}
-                  className="pl-10 rounded-full border-outline h-9"
-                />
-              </div>
-            </div>
-
-            <div className="max-h-[500px] overflow-y-auto p-4">
-              {selectedStories.length > 0 && (
-                <div className="mb-4 p-3 bg-primary/10 rounded-2xl">
-                  <div className="flex items-center justify-between">
+                     {/* Left Column - Backlog (30%) */}
+           <div className="lg:col-span-4 bg-surface rounded-3xl overflow-hidden">
+                           {/* Selected Stories - Chỉ hiển thị khi có stories được chọn VÀ còn stories để chọn */}
+              {selectedStories.length > 0 && allSelectableStories.length > 0 && (
+                <div className="p-4 bg-primary/10 border-b border-primary/20">
+                  <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-primary">
                       {selectedStories.length} stories selected
                     </span>
@@ -312,8 +462,147 @@ export default function SprintPlanningPage({ params }: { params: Promise<{ id: s
                       Add to Sprint
                     </Button>
                   </div>
+                  <div className="space-y-2">
+                    {selectedStories.map((storyId) => {
+                      const story = allSelectableStories.find(s => s.id === storyId)
+                      if (!story) return null
+                      return (
+                        <div key={story.id} className="flex items-center gap-3 p-2 bg-primary/5 rounded-xl border border-primary/20">
+                          <Badge variant="outline" className="text-xs rounded-full px-2 py-0.5">{story.id}</Badge>
+                          <span className="text-sm text-foreground line-clamp-1 flex-1">{story.title}</span>
+                          <span className="text-xs font-medium text-primary">{story.storyPoints} pts</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setSelectedStories(prev => prev.filter(id => id !== story.id))}
+                            className="h-6 w-6 p-0 rounded-full hover:bg-primary/20"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
+
+              {/* Thông báo khi tất cả stories đã được thêm vào sprint - chỉ hiện khi không còn gì để chọn */}
+              {allSelectableStories.length === 0 && selectedStories.length === 0 && (
+                <div className="p-4 bg-chart-2/10 border-b border-chart-2/20">
+                  <div className="flex items-center gap-2 text-chart-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="text-sm font-medium">All available stories have been added to the sprint</span>
+                  </div>
+                </div>
+              )}
+
+             <div className="bg-muted/30 px-4 py-3 border-b border-outline-variant/20">
+               <h3 className="text-lg font-medium text-foreground mb-3">Product Backlog</h3>
+               <div className="relative">
+                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                 <Input
+                   placeholder="Search stories..."
+                   value={backlogSearch}
+                   onChange={(e) => setBacklogSearch(e.target.value)}
+                   className="pl-10 rounded-full border-outline h-9"
+                 />
+               </div>
+             </div>
+
+             <div className="max-h-[500px] overflow-y-auto p-4">
+               {/* Sprint list above backlog */}
+              <div className="space-y-2 mb-4">
+                <h4 className="text-sm font-medium text-on-surface-variant px-1">Sprints</h4>
+                {sprintsState.map((sp) => (
+                  <Collapsible key={sp.id}>
+                    <CollapsibleTrigger
+                      className="group w-full flex items-center justify-between p-3 rounded-2xl border border-outline-variant/30 bg-surface/50 hover:bg-surface-variant/10 transition-colors data-[state=open]:bg-primary/5 data-[state=open]:border-primary/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
+                        <div>
+                          <div className="text-sm font-medium text-foreground">{sp.name}</div>
+                          <div className="text-xs text-muted-foreground">{sp.startDate} - {sp.endDate}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{sp.stories.length} items</div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-2 space-y-2">
+                        {sp.stories.map((story) => (
+                          <div
+                            key={story.id}
+                            className={`p-3 rounded-2xl border transition-colors cursor-pointer hover:shadow-md ${
+                              selectedStories.includes(story.id)
+                                ? 'border-primary/50 bg-primary/5'
+                                : 'border-outline-variant/20 bg-muted/10 hover:bg-muted/20'
+                            } ${selectedStory?.id === story.id ? 'ring-2 ring-primary/30' : ''}`}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, story)}
+                            onClick={(e) => handleStoryClick(e, story)}
+                            onMouseDown={(e) => {
+                              const target = e.target as HTMLElement
+                              if (target.closest('input, button, [role="button"], [data-radix-collection-item]')) {
+                                e.preventDefault()
+                                e.stopPropagation()
+                              }
+                            }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <Checkbox
+                                checked={selectedStories.includes(story.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedStories(prev => [...prev, story.id])
+                                  } else {
+                                    setSelectedStories(prev => prev.filter(id => id !== story.id))
+                                  }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <GripVertical className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Badge variant="outline" className="text-xs rounded-full px-2 py-0.5">{story.id}</Badge>
+                                  <Badge className={`text-xs rounded-full px-2 py-0.5 ${priorityColors[story.priority as keyof typeof priorityColors]}`}>{story.priority}</Badge>
+                                </div>
+                                <div className="text-sm text-foreground line-clamp-1">{story.title}</div>
+                                <div className="flex items-center justify-between mt-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-medium text-primary">{story.storyPoints} pts</span>
+                                    {story.labels && (
+                                      <div className="flex gap-1">
+                                        {story.labels.slice(0, 2).map((label) => (
+                                          <Badge key={label} variant="secondary" className="text-[10px] px-1.5 py-0.5 rounded">{label}</Badge>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {story.assignee && (
+                                    <Avatar className="w-6 h-6">
+                                      <AvatarImage src={story.assignee.avatar} alt={story.assignee.name} />
+                                      <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+                                        {story.assignee.name.split(' ').map((n: string) => n[0]).join('')}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))}
+                <div className="pt-3 pb-2 px-1">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-[2px] bg-outline/60 rounded-full" />
+                    <span className="text-xs text-muted-foreground">Backlog items</span>
+                    <div className="flex-1 h-[2px] bg-outline/60 rounded-full" />
+                  </div>
+                </div>
+              </div>
 
               <div 
                 className="space-y-3"
