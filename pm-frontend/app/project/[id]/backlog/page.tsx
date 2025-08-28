@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import React, { useState, useRef, useCallback, use } from "react"
 import { Plus, Search, Filter, Grid, List, X, MoreVertical, Edit, Copy, Trash2, BookMarked, Bookmark, Bug, Check, SquareCheck, GripVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -114,7 +114,8 @@ const typeIcons = {
   task: <SquareCheck size={16} />,
 }
 
-export default function ProjectBacklogPage({ params }: { params: { id: string } }) {
+export default function ProjectBacklogPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [selectedStory, setSelectedStory] = useState<any>(null)
 
   const [selectedStories, setSelectedStories] = useState<string[]>([])
@@ -241,7 +242,7 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
   })
 
   return (
-    <div className="flex-1 space-y-6 p-2 sm:p-6 max-w-full xl:max-w-7xl mx-auto">
+    <div className="flex-1 space-y-6 p-2 sm:p-6 w-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Product Backlog</h1>
@@ -262,23 +263,23 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
 
               <div className="space-y-5">
                 {/* Title - Ưu tiên cao nhất */}
-                  <div>
+                <div>
                   <Label className="text-sm font-medium text-on-surface mb-2 block">Title *</Label>
-                    <Input
-                      placeholder="Enter work item title..."
+                  <Input
+                    placeholder="Enter work item title..."
                     className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary h-10"
-                    />
-                  </div>
+                  />
+                </div>
 
                 {/* Description - Thứ hai */}
-                  <div>
+                <div>
                   <Label className="text-sm font-medium text-on-surface mb-2 block">Description</Label>
-                    <Textarea
+                  <Textarea
                     placeholder="Enter detailed description (optional)"
                     rows={3}
                     className="rounded-2xl border-outline-variant/50 bg-surface focus:border-primary resize-none"
-                    />
-                  </div>
+                  />
+                </div>
 
                 {/* Type & Priority Row - Compact layout */}
                 <div className="grid grid-cols-3 gap-4">
@@ -293,23 +294,23 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                           <div className="flex items-center gap-2">
                             <div className="p-1 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
                               <Bookmark size={12} />
-                      </div>
+                            </div>
                             Story
-                      </div>
+                          </div>
                         </SelectItem>
                         <SelectItem value="bug">
                           <div className="flex items-center gap-2">
                             <div className="p-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400">
                               <Bug size={12} />
-                    </div>
+                            </div>
                             Bug
-                  </div>
+                          </div>
                         </SelectItem>
                         <SelectItem value="task">
                           <div className="flex items-center gap-2">
                             <div className="p-1 rounded-full bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400">
                               <SquareCheck size={12} />
-                </div>
+                            </div>
                             Task
                           </div>
                         </SelectItem>
@@ -386,8 +387,8 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </SelectContent>
                     </Select>
                   </div>
-                    </div>
-                  </div>
+                </div>
+              </div>
 
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-6 border-t border-outline-variant/30">
@@ -522,29 +523,29 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
           </div>
 
           <div className="bg-surface rounded-3xl overflow-hidden">
-            {/* Table Wrapper with Horizontal Scroll Only */}
-            <div className="overflow-x-auto">
-              <div className="min-w-[1200px]">
+            {/* Table Wrapper - Full Width */}
+            <div className="w-full">
+              <div className="w-full">
                 {/* Header */}
                 <div className="bg-surface-variant/30 px-6 py-1.5 border-b border-outline-variant/20 sticky top-0 z-10">
                   <div className="flex items-center min-h-[32px]">
-                    <div className="w-[60px] flex-shrink-0 flex items-center justify-start">
+                    <div className="w-12 flex-shrink-0 flex items-center justify-start">
                       <Checkbox
                         checked={selectedStories.length === filteredStories.length}
                         onCheckedChange={toggleSelectAll}
                         className="rounded-md"
                       />
                     </div>
-                    <div className="w-[80px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Type</div>
-                    <div className="w-[100px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Key</div>
-                    <div className="flex-1 min-w-[200px] text-sm font-semibold text-on-surface-variant">Summary</div>
-                    <div className="w-[120px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Status</div>
-                    <div className="w-[120px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Priority</div>
-                    <div className="w-[80px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Points</div>
-                    <div className="w-[140px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Assignee</div>
-                    <div className="w-[100px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Sprint</div>
-                    <div className="w-[100px] flex-shrink-0 text-sm font-semibold text-on-surface-variant">Created</div>
-                    <div className="w-[60px] flex-shrink-0"></div>
+                    <div className="w-16 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Type</div>
+                    <div className="w-24 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Key</div>
+                    <div className="flex-1 text-sm font-semibold text-on-surface-variant">Summary</div>
+                    <div className="w-28 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Status</div>
+                    <div className="w-28 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Priority</div>
+                    <div className="w-20 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Points</div>
+                    <div className="w-36 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Assignee</div>
+                    <div className="w-24 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Sprint</div>
+                    <div className="w-24 flex-shrink-0 text-sm font-semibold text-on-surface-variant">Created</div>
+                    <div className="w-12 flex-shrink-0"></div>
                   </div>
                 </div>
 
@@ -558,7 +559,7 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       onClick={() => handleStoryClick(story)}
                     >
                       {/* Checkbox */}
-                      <div className="w-[60px] flex-shrink-0 flex items-center justify-start" onClick={(e) => e.stopPropagation()}>
+                      <div className="w-12 flex-shrink-0 flex items-center justify-start" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedStories.includes(story.id)}
                           onCheckedChange={() => toggleStorySelection(story.id)}
@@ -567,17 +568,17 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </div>
 
                       {/* Type */}
-                      <div className="w-[80px] flex-shrink-0 flex items-center justify-start">
+                      <div className="w-16 flex-shrink-0 flex items-center justify-start">
                         <div className={`p-2 rounded-full ${story.type === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                            story.type === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                              'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                          story.type === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                            'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                           }`}>
                           {typeIcons[story.type as keyof typeof typeIcons]}
                         </div>
                       </div>
 
                       {/* Key */}
-                      <div className="w-[100px] flex-shrink-0">
+                      <div className="w-24 flex-shrink-0">
                         <Link
                           href={`/project/${params.id}/work-items/${story.id}`}
                           className="text-primary hover:underline font-semibold text-sm"
@@ -585,15 +586,15 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                         >
                           {story.id}
                         </Link>
-                        </div>
+                      </div>
 
                       {/* Summary */}
-                      <div className="flex-1 min-w-[200px] pr-4">
+                      <div className="flex-1 pr-4">
                         <div className="font-medium text-on-surface truncate">{story.title}</div>
                       </div>
 
                       {/* Status */}
-                      <div className="w-[120px] flex-shrink-0">
+                      <div className="w-28 flex-shrink-0">
                         <Badge
                           variant="outline"
                           className={`${statusColors[story.status as keyof typeof statusColors]} font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap`}
@@ -603,7 +604,7 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </div>
 
                       {/* Priority */}
-                      <div className="w-[120px] flex-shrink-0">
+                      <div className="w-28 flex-shrink-0">
                         <Badge
                           variant="outline"
                           className={`${priorityColors[story.priority as keyof typeof priorityColors]} font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap`}
@@ -613,14 +614,14 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </div>
 
                       {/* Points */}
-                      <div className="w-[80px] flex-shrink-0 flex items-center justify-center">
+                      <div className="w-20 flex-shrink-0 flex items-center justify-center">
                         <div className="w-8 h-8 bg-primary/10 text-primary font-bold rounded-full text-sm flex items-center justify-center">
                           {story.storyPoints}
                         </div>
                       </div>
 
                       {/* Assignee */}
-                      <div className="w-[140px] flex-shrink-0">
+                      <div className="w-36 flex-shrink-0">
                         {story.assignee ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="w-7 h-7 ring-2 ring-outline-variant/30 flex-shrink-0">
@@ -648,7 +649,7 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </div>
 
                       {/* Sprint */}
-                      <div className="w-[100px] flex-shrink-0">
+                      <div className="w-24 flex-shrink-0">
                         {story.sprint ? (
                           <Badge variant="secondary" className="bg-secondary/30 text-secondary-foreground font-medium px-2 py-1 rounded-full text-xs whitespace-nowrap">
                             {story.sprint}
@@ -659,10 +660,10 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       </div>
 
                       {/* Created */}
-                      <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant font-mono">{story.createdDate}</div>
+                      <div className="w-24 flex-shrink-0 text-sm text-on-surface-variant font-mono">{story.createdDate}</div>
 
                       {/* Actions */}
-                      <div className="w-[60px] flex-shrink-0 flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                      <div className="w-12 flex-shrink-0 flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-surface-variant/50">
@@ -707,7 +708,7 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       // Full Create Form - Aligned with columns
                       <>
                         {/* Empty checkbox space */}
-                        <div className="w-[60px] flex-shrink-0 flex items-center justify-start">
+                        <div className="w-12 flex-shrink-0 flex items-center justify-start">
                           <Button
                             onClick={() => setShowQuickCreate(false)}
                             variant="ghost"
@@ -719,16 +720,16 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                         </div>
 
                         {/* Type Selector */}
-                        <div className="w-[80px] flex-shrink-0 flex items-center justify-start">
+                        <div className="w-16 flex-shrink-0 flex items-center justify-start">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="p-1 rounded-full hover:bg-surface-variant/50">
                                 <div className={`p-1.5 rounded-full ${quickCreateType === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                                    quickCreateType === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                                      'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                                  quickCreateType === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                                    'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                                   }`}>
                                   {typeIcons[quickCreateType]}
-                        </div>
+                                </div>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="elevation-3 rounded-2xl border-outline-variant/50">
@@ -736,23 +737,23 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                                 <div className="flex items-center gap-2">
                                   <div className="p-1 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
                                     <Bookmark size={12} />
-                      </div>
+                                  </div>
                                   Story
-                    </div>
+                                </div>
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setQuickCreateType("bug")} className="rounded-lg">
-                    <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2">
                                   <div className="p-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400">
                                     <Bug size={12} />
-                    </div>
+                                  </div>
                                   Bug
-                  </div>
+                                </div>
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setQuickCreateType("task")} className="rounded-lg">
                                 <div className="flex items-center gap-2">
                                   <div className="p-1 rounded-full bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400">
                                     <SquareCheck size={12} />
-            </div>
+                                  </div>
                                   Task
                                 </div>
                               </DropdownMenuItem>
@@ -761,10 +762,10 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                         </div>
 
                         {/* Empty Key space */}
-                        <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant italic">Auto</div>
+                        <div className="w-24 flex-shrink-0 text-sm text-on-surface-variant italic">Auto</div>
 
                         {/* Title Input */}
-                        <div className="flex-1 min-w-[200px] pr-4">
+                        <div className="flex-1 pr-4">
                           <Input
                             placeholder="Enter work item title..."
                             value={quickCreateTitle}
@@ -776,15 +777,15 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                         </div>
 
                         {/* Default values placeholders */}
-                        <div className="w-[120px] flex-shrink-0 text-sm text-on-surface-variant italic">To Do</div>
-                        <div className="w-[120px] flex-shrink-0 text-sm text-on-surface-variant italic">Medium</div>
-                        <div className="w-[80px] flex-shrink-0 text-sm text-on-surface-variant italic text-center">0</div>
-                        <div className="w-[140px] flex-shrink-0 text-sm text-on-surface-variant italic">Unassigned</div>
-                        <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant italic">-</div>
-                        <div className="w-[100px] flex-shrink-0 text-sm text-on-surface-variant italic">Today</div>
+                        <div className="w-28 flex-shrink-0 text-sm text-on-surface-variant italic">To Do</div>
+                        <div className="w-28 flex-shrink-0 text-sm text-on-surface-variant italic">Medium</div>
+                        <div className="w-20 flex-shrink-0 text-sm text-on-surface-variant italic text-center">0</div>
+                        <div className="w-36 flex-shrink-0 text-sm text-on-surface-variant italic">Unassigned</div>
+                        <div className="w-24 flex-shrink-0 text-sm text-on-surface-variant italic">-</div>
+                        <div className="w-24 flex-shrink-0 text-sm text-on-surface-variant italic">Today</div>
 
                         {/* Action Buttons */}
-                        <div className="w-[60px] flex-shrink-0 flex items-center justify-end gap-1">
+                        <div className="w-12 flex-shrink-0 flex items-center justify-end gap-1">
 
                           <Button
                             onClick={handleQuickCreate}
@@ -816,29 +817,29 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
             </div>
 
             <div className="space-y-4" style={{ width: workItemWidth }}>
-            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
                 <h2 className="text-lg font-medium text-on-surface">Work Item Details</h2>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedStory(null)} className="rounded-full hover:bg-surface-variant/50">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
 
               <div className="bg-surface rounded-3xl overflow-hidden border border-outline-variant/30">
                 {/* Header Section */}
                 <div className="bg-surface-variant/20 px-4 py-3 border-b border-outline-variant/20 flex-shrink-0">
                   <div className="flex items-center gap-3 mb-2">
                     <div className={`p-1.5 rounded-full ${selectedStory.type === 'story' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                        selectedStory.type === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                          'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                      selectedStory.type === 'bug' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                        'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                       }`}>
                       {typeIcons[selectedStory.type as keyof typeof typeIcons]}
                     </div>
-                  <Link
-                    href={`/project/${params.id}/work-items/${selectedStory.id}`}
+                    <Link
+                      href={`/project/${params.id}/work-items/${selectedStory.id}`}
                       className="text-primary hover:underline font-semibold text-sm"
-                  >
-                    {selectedStory.id}
-                  </Link>
+                    >
+                      {selectedStory.id}
+                    </Link>
                     <div className="flex items-center gap-2 ml-auto">
                       <Badge
                         variant="outline"
@@ -852,10 +853,10 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       >
                         {selectedStory.status.replace("_", " ").toUpperCase()}
                       </Badge>
-                </div>
-                </div>
-                  <h3 className="text-base font-medium text-on-surface leading-tight">{selectedStory.title}</h3>
+                    </div>
                   </div>
+                  <h3 className="text-base font-medium text-on-surface leading-tight">{selectedStory.title}</h3>
+                </div>
 
                 {/* Content Section */}
                 <div className="p-4 space-y-4">
@@ -866,11 +867,11 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                       <p className="text-sm text-on-surface-variant leading-relaxed">
                         {selectedStory.description}
                       </p>
+                    </div>
                   </div>
-                </div>
 
                   {/* Metadata Grid */}
-                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     {/* Story Points */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-on-surface">Story Points</Label>
@@ -880,7 +881,7 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                         </div>
                         <span className="text-xs text-on-surface-variant">Points</span>
                       </div>
-                  </div>
+                    </div>
 
                     {/* Assignee */}
                     <div className="space-y-2">
@@ -896,7 +897,7 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                                 .join("")}
                             </AvatarFallback>
                           </Avatar>
-                  <div>
+                          <div>
                             <div className="text-sm font-medium text-on-surface">{selectedStory.assignee.name}</div>
                             <div className="text-xs text-on-surface-variant">Assigned</div>
                           </div>
@@ -912,12 +913,12 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                           </div>
                         </div>
                       )}
+                    </div>
                   </div>
-                </div>
 
                   {/* Sprint & Labels */}
                   <div className="space-y-3">
-                <div>
+                    <div>
                       <Label className="text-sm font-medium text-on-surface">Sprint</Label>
                       <div className="mt-1">
                         {selectedStory.sprint ? (
@@ -928,34 +929,34 @@ export default function ProjectBacklogPage({ params }: { params: { id: string } 
                           <span className="text-xs text-on-surface-variant italic bg-surface-variant/30 px-3 py-1 rounded-full">Not assigned</span>
                         )}
                       </div>
-                </div>
+                    </div>
 
-                <div>
+                    <div>
                       <Label className="text-sm font-medium text-on-surface">Labels</Label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {selectedStory.labels.map((label: string) => (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedStory.labels.map((label: string) => (
                           <Badge key={label} variant="secondary" className="text-xs rounded-full px-2 py-0.5 bg-surface-variant/50 text-on-surface-variant border border-outline-variant/50">
-                        {label}
-                      </Badge>
-                    ))}
+                            {label}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                        </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-3 border-t border-outline-variant/20">
-                  <Link href={`/project/${params.id}/work-items/${selectedStory.id}`} className="flex-1">
+                    <Link href={`/project/${params.id}/work-items/${selectedStory.id}`} className="flex-1">
                       <Button size="sm" className="w-full rounded-full elevation-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs">
                         <Edit className="w-3 h-3 mr-2" />
-                      View Details
-                    </Button>
-                  </Link>
+                        View Details
+                      </Button>
+                    </Link>
                     <Button variant="outline" size="sm" className="rounded-full border-outline-variant bg-surface hover:bg-surface-variant/50 text-xs">
                       <Copy className="w-3 h-3 mr-2" />
-                    Clone
-                  </Button>
+                      Clone
+                    </Button>
+                  </div>
                 </div>
-          </div>
               </div>
             </div>
           </>

@@ -44,9 +44,10 @@ const navigation = [
 interface SidebarNavProps {
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
+  sidebarWidth: number
 }
 
-export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
+export function SidebarNav({ sidebarOpen, setSidebarOpen, sidebarWidth }: SidebarNavProps) {
   const pathname = usePathname()
   const [isProjectsExpanded, setIsProjectsExpanded] = useState(true)
 
@@ -54,7 +55,10 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
   const hasMoreProjects = projects.length > MAX_SIDEBAR_PROJECTS
 
   return (
-    <div className="flex h-full w-60 flex-col bg-sidebar border-r border-sidebar-border">
+    <div
+      className="flex h-full flex-col bg-sidebar border-r border-sidebar-border"
+      style={{ width: `${sidebarWidth}px` }}
+    >
       <div className="flex h-16 items-center justify-between pl-6 pr-3 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -77,7 +81,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
           {navigation.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link key={item.name} href={item.href}>
+              <Link key={item.name} href={item.href} className="block">
                 <Button
                   variant={isActive ? "default" : "ghost"}
                   className={cn(
@@ -94,7 +98,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
             )
           })}
 
-          <div className="mt-4">
+          <div className="mt-1">
             <Button
               variant="ghost"
               onClick={() => setIsProjectsExpanded(!isProjectsExpanded)}
@@ -110,7 +114,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
                 {sidebarProjects.map((project) => {
                   const isActive = pathname.startsWith(`/project/${project.id}`)
                   return (
-                    <Link key={project.id} href={`/project/${project.id}`}>
+                    <Link key={project.id} href={`/project/${project.id}`} className="block">
                       <Button
                         variant={isActive ? "default" : "ghost"}
                         className={cn(
@@ -130,14 +134,14 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen }: SidebarNavProps) {
                                 : "bg-gray-400",
                           )}
                         />
-                        <span className="truncate max-w-33">{project.name}</span>
+                        <span className="truncate" style={{ maxWidth: `${Math.max(sidebarWidth - 100, 80)}px` }}>{project.name}</span>
                       </Button>
                     </Link>
                   )
                 })}
 
                 {hasMoreProjects && (
-                  <Link href="/projects">
+                  <Link href="/projects" className="block">
                     <Button
                       variant="ghost"
                       className="w-full justify-start gap-3 h-9 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
