@@ -1,0 +1,802 @@
+openapi: 3.0.3
+info:
+  title: Backlog & Task Management Service API
+  description: API for managing Product Backlog, User Stories, Tasks, and SubTasks in the Scrum Management System
+  version: 1.0.0
+  contact:
+    name: Scrum Management Team
+    email: support@scrummanagement.com
+
+servers:
+  - url: https://api.scrummanagement.com/backlog-service/v1
+    description: Production server
+  - url: https://staging-api.scrummanagement.com/backlog-service/v1
+    description: Staging server
+
+paths:
+  /projects/{projectId}/work-items:
+    get:
+      summary: Get work items for a project
+      tags:
+        - Work Items
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Backlog, Planned, "To do", "In Progress", "In Review", Done, Canceled]
+        - name: itemType
+          in: query
+          schema:
+            type: string
+            enum: [Story, Task, Bug, SubTask]
+        - name: assignee
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: epicId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Work items retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workItems:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkItemResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      summary: Create a new work item
+      tags:
+        - Work Items
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - itemType
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  oneOf:
+                    - type: string
+                      enum: [High, Medium, Low]
+                    - type: integer
+                storyPoint:
+                  type: integer
+                assignee:
+                  type: string
+                  format: uuid
+                timeEstimation:
+                  type: integer
+                epicId:
+                  type: string
+                  format: uuid
+                parentId:
+                  type: string
+                  format: uuid
+                itemType:
+                  type: string
+                  enum: [Story, Task, Bug, SubTask]
+                sprintId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Work item created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemResponse'
+
+  /projects/{projectId}/work-items/{workItemId}:
+    get:
+      summary: Get work item by ID
+      tags:
+        - Work Items
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Work item retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemDetailResponse'
+
+    put:
+      summary: Update work item
+      tags:
+        - Work Items
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  oneOf:
+                    - type: string
+                      enum: [High, Medium, Low]
+                    - type: integer
+                storyPoint:
+                  type: integer
+                status:
+                  type: string
+                  enum: [Backlog, Planned, "To do", "In Progress", "In Review", Done, Canceled]
+                assignee:
+                  type: string
+                  format: uuid
+                timeEstimation:
+                  type: integer
+                sprintId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Work item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemResponse'
+
+    delete:
+      summary: Delete work item
+      tags:
+        - Work Items
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Work item deleted successfully
+
+  /projects/{projectId}/work-items/{workItemId}/comments:
+    get:
+      summary: Get comments for a work item
+      tags:
+        - Comments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskCommentResponse'
+
+    post:
+      summary: Add comment to work item
+      tags:
+        - Comments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tokens
+              properties:
+                tokens:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      text:
+                        type: string
+                      type:
+                        type: string
+                        enum: [text, mention]
+                      mentionId:
+                        type: string
+                        format: uuid
+      responses:
+        '201':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCommentResponse'
+
+  /projects/{projectId}/work-items/{workItemId}/relationships:
+    get:
+      summary: Get work item relationships
+      tags:
+        - Relationships
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Relationships retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskRelationshipResponse'
+
+    post:
+      summary: Create work item relationship
+      tags:
+        - Relationships
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - targetTaskId
+              properties:
+                type:
+                  type: string
+                  enum: [Blocked, Duplicated, "Related to", Parent]
+                targetTaskId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Relationship created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRelationshipResponse'
+
+  /projects/{projectId}/work-items/{workItemId}/attachments:
+    get:
+      summary: Get attachments for work item
+      tags:
+        - Attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attachments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentResponse'
+
+    post:
+      summary: Upload attachment to work item
+      tags:
+        - Attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workItemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Attachment uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentResponse'
+
+  /projects/{projectId}/epics:
+    get:
+      summary: Get epics for a project
+      tags:
+        - Epics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Epics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EpicResponse'
+
+    post:
+      summary: Create a new epic
+      tags:
+        - Epics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Epic created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EpicResponse'
+
+  /projects/{projectId}/labels:
+    get:
+      summary: Get labels for a project
+      tags:
+        - Labels
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Labels retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LabelResponse'
+
+    post:
+      summary: Create a new label
+      tags:
+        - Labels
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Label created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelResponse'
+
+components:
+  schemas:
+    WorkItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        sprintId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          oneOf:
+            - type: string
+              enum: [High, Medium, Low]
+            - type: integer
+        storyPoint:
+          type: integer
+        status:
+          type: string
+          enum: [Backlog, Planned, "To do", "In Progress", "In Review", Done, Canceled]
+        assignee:
+          type: string
+          format: uuid
+        reporter:
+          type: string
+          format: uuid
+        timeEstimation:
+          type: integer
+        epicId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+        itemType:
+          type: string
+          enum: [Story, Task, Bug, SubTask]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        updatedBy:
+          type: string
+          format: uuid
+
+    WorkItemDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/WorkItemResponse'
+        - type: object
+          properties:
+            comments:
+              type: array
+              items:
+                $ref: '#/components/schemas/TaskCommentResponse'
+            attachments:
+              type: array
+              items:
+                $ref: '#/components/schemas/AttachmentResponse'
+            relationships:
+              type: array
+              items:
+                $ref: '#/components/schemas/TaskRelationshipResponse'
+            labels:
+              type: array
+              items:
+                $ref: '#/components/schemas/LabelResponse'
+
+    TaskCommentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        tokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentTokenResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CommentTokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskCommentId:
+          type: string
+          format: uuid
+        mentionId:
+          type: string
+          format: uuid
+        text:
+          type: string
+        index:
+          type: integer
+        type:
+          type: string
+          enum: [text, mention]
+
+    TaskRelationshipResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [Blocked, Duplicated, "Related to", Parent]
+        targetTaskId:
+          type: string
+          format: uuid
+        workItemId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    AttachmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        relatedId:
+          type: string
+          format: uuid
+        relatedType:
+          type: string
+          enum: [WorkItem, TaskComment]
+        filename:
+          type: string
+        mineType:
+          type: string
+        url:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    EpicResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LabelResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

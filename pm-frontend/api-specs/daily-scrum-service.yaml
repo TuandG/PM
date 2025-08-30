@@ -1,0 +1,637 @@
+openapi: 3.0.3
+info:
+  title: Daily Scrum Service API
+  description: API for managing Daily Scrum updates, records, and reminders in the Scrum Management System
+  version: 1.0.0
+  contact:
+    name: Scrum Management Team
+    email: support@scrummanagement.com
+
+servers:
+  - url: https://api.scrummanagement.com/daily-scrum-service/v1
+    description: Production server
+  - url: https://staging-api.scrummanagement.com/daily-scrum-service/v1
+    description: Staging server
+
+paths:
+  /projects/{projectId}/daily-records:
+    get:
+      summary: Get daily scrum records for a project
+      tags:
+        - Daily Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Daily records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DailyRecordResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      summary: Create or update daily scrum record
+      tags:
+        - Daily Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sprintId
+                - date
+                - whatDidYesterday
+                - whatWillDoToday
+              properties:
+                sprintId:
+                  type: string
+                  format: uuid
+                date:
+                  type: string
+                  format: date
+                whatDidYesterday:
+                  type: string
+                whatWillDoToday:
+                  type: string
+                blockers:
+                  type: string
+      responses:
+        '201':
+          description: Daily record created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyRecordResponse'
+        '200':
+          description: Daily record updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyRecordResponse'
+
+  /projects/{projectId}/daily-records/{recordId}:
+    get:
+      summary: Get daily record by ID
+      tags:
+        - Daily Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Daily record retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyRecordResponse'
+        '404':
+          description: Daily record not found
+
+    put:
+      summary: Update daily record
+      tags:
+        - Daily Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                whatDidYesterday:
+                  type: string
+                whatWillDoToday:
+                  type: string
+                blockers:
+                  type: string
+      responses:
+        '200':
+          description: Daily record updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyRecordResponse'
+
+    delete:
+      summary: Delete daily record
+      tags:
+        - Daily Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Daily record deleted successfully
+
+  /projects/{projectId}/sprints/{sprintId}/daily-summary:
+    get:
+      summary: Get daily summary for a sprint on specific date
+      tags:
+        - Daily Summary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Daily summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  sprintId:
+                    type: string
+                    format: uuid
+                  projectId:
+                    type: string
+                    format: uuid
+                  totalMembers:
+                    type: integer
+                  submittedRecords:
+                    type: integer
+                  pendingRecords:
+                    type: integer
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DailyRecordResponse'
+                  blockers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId:
+                          type: string
+                          format: uuid
+                        userName:
+                          type: string
+                        blocker:
+                          type: string
+
+  /projects/{projectId}/daily-reminders:
+    get:
+      summary: Get daily reminder settings for project members
+      tags:
+        - Daily Reminders
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Daily reminder settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailyReminderResponse'
+
+    post:
+      summary: Create or update daily reminder setting
+      tags:
+        - Daily Reminders
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reminderTime
+                - isEnabled
+              properties:
+                reminderTime:
+                  type: string
+                  pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+                  example: "09:00"
+                isEnabled:
+                  type: boolean
+      responses:
+        '201':
+          description: Daily reminder setting created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyReminderResponse'
+        '200':
+          description: Daily reminder setting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyReminderResponse'
+
+  /projects/{projectId}/daily-reminders/{userId}:
+    get:
+      summary: Get daily reminder setting for specific user
+      tags:
+        - Daily Reminders
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Daily reminder setting retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyReminderResponse'
+        '404':
+          description: Daily reminder setting not found
+
+    put:
+      summary: Update daily reminder setting for specific user
+      tags:
+        - Daily Reminders
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reminderTime:
+                  type: string
+                  pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+                  example: "09:00"
+                isEnabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Daily reminder setting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyReminderResponse'
+
+    delete:
+      summary: Delete daily reminder setting for specific user
+      tags:
+        - Daily Reminders
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Daily reminder setting deleted successfully
+
+  /projects/{projectId}/daily-analytics:
+    get:
+      summary: Get daily scrum analytics for a project
+      tags:
+        - Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Daily scrum analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  participationRate:
+                    type: object
+                    properties:
+                      overall:
+                        type: number
+                        description: Overall participation rate as percentage
+                      byMember:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            userId:
+                              type: string
+                              format: uuid
+                            userName:
+                              type: string
+                            rate:
+                              type: number
+                  blockerTrends:
+                    type: object
+                    properties:
+                      totalBlockers:
+                        type: integer
+                      resolvedBlockers:
+                        type: integer
+                      activeBlockers:
+                        type: integer
+                      averageResolutionTime:
+                        type: number
+                        description: Average time to resolve blockers in days
+                  dailySubmissions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        submitted:
+                          type: integer
+                        total:
+                          type: integer
+                        rate:
+                          type: number
+
+components:
+  schemas:
+    DailyRecordResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        sprintId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        whatDidYesterday:
+          type: string
+        whatWillDoToday:
+          type: string
+        blockers:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+              format: email
+            avatarUrl:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        updatedBy:
+          type: string
+          format: uuid
+
+    DailyReminderResponse:
+      type: object
+      properties:
+        projectId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        reminderTime:
+          type: string
+          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+          example: "09:00"
+        isEnabled:
+          type: boolean
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+              format: email
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

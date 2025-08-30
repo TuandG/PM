@@ -1,0 +1,818 @@
+openapi: 3.0.3
+info:
+  title: Sprint Lifecycle Management Service API
+  description: API for managing the complete lifecycle of Sprints including planning, board management, review, and retrospective
+  version: 1.0.0
+  contact:
+    name: Scrum Management Team
+    email: support@scrummanagement.com
+
+servers:
+  - url: https://api.scrummanagement.com/sprint-service/v1
+    description: Production server
+  - url: https://staging-api.scrummanagement.com/sprint-service/v1
+    description: Staging server
+
+paths:
+  /projects/{projectId}/sprints:
+    get:
+      summary: Get sprints for a project
+      tags:
+        - Sprints
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Planned, "In progress", Completed, Canceled]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Sprints retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sprints:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SprintResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      summary: Create a new sprint
+      tags:
+        - Sprints
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - goal
+                - plannedStartDate
+                - plannedEndDate
+              properties:
+                name:
+                  type: string
+                goal:
+                  type: string
+                plannedStartDate:
+                  type: string
+                  format: date
+                plannedEndDate:
+                  type: string
+                  format: date
+                storyPointLimit:
+                  type: integer
+      responses:
+        '201':
+          description: Sprint created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintResponse'
+
+  /projects/{projectId}/sprints/{sprintId}:
+    get:
+      summary: Get sprint by ID
+      tags:
+        - Sprints
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sprint retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintDetailResponse'
+
+    put:
+      summary: Update sprint
+      tags:
+        - Sprints
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                goal:
+                  type: string
+                plannedStartDate:
+                  type: string
+                  format: date
+                plannedEndDate:
+                  type: string
+                  format: date
+                actualStartDate:
+                  type: string
+                  format: date
+                actualEndDate:
+                  type: string
+                  format: date
+                status:
+                  type: string
+                  enum: [Planned, "In progress", Completed, Canceled]
+                storyPointLimit:
+                  type: integer
+                velocity:
+                  type: number
+      responses:
+        '200':
+          description: Sprint updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintResponse'
+
+    delete:
+      summary: Delete sprint
+      tags:
+        - Sprints
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Sprint deleted successfully
+
+  /projects/{projectId}/sprints/{sprintId}/start:
+    post:
+      summary: Start a sprint
+      tags:
+        - Sprint Actions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actualStartDate:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Sprint started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintResponse'
+
+  /projects/{projectId}/sprints/{sprintId}/complete:
+    post:
+      summary: Complete a sprint
+      tags:
+        - Sprint Actions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actualEndDate:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Sprint completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintResponse'
+
+  /projects/{projectId}/sprints/{sprintId}/board:
+    get:
+      summary: Get sprint board with work items
+      tags:
+        - Sprint Board
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sprint board retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sprint:
+                    $ref: '#/components/schemas/SprintResponse'
+                  columns:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        workItems:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/WorkItemResponse'
+
+  /projects/{projectId}/sprints/{sprintId}/progress:
+    get:
+      summary: Get sprint progress metrics
+      tags:
+        - Sprint Metrics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sprint progress retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalStoryPoints:
+                    type: integer
+                  completedStoryPoints:
+                    type: integer
+                  remainingStoryPoints:
+                    type: integer
+                  totalTasks:
+                    type: integer
+                  completedTasks:
+                    type: integer
+                  remainingTasks:
+                    type: integer
+                  completionPercentage:
+                    type: number
+                  burndownData:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        remainingPoints:
+                          type: integer
+                        idealRemaining:
+                          type: integer
+
+  /projects/{projectId}/sprints/{sprintId}/review:
+    get:
+      summary: Get sprint review
+      tags:
+        - Sprint Review
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sprint review retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintReviewResponse'
+
+    post:
+      summary: Create sprint review
+      tags:
+        - Sprint Review
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - notes
+              properties:
+                notes:
+                  type: string
+                reviewDate:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Sprint review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintReviewResponse'
+
+    put:
+      summary: Update sprint review
+      tags:
+        - Sprint Review
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+                reviewDate:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Sprint review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintReviewResponse'
+
+  /projects/{projectId}/sprints/{sprintId}/retrospective:
+    get:
+      summary: Get sprint retrospective
+      tags:
+        - Sprint Retrospective
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sprint retrospective retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintRetrospectiveResponse'
+
+    post:
+      summary: Create sprint retrospective
+      tags:
+        - Sprint Retrospective
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+      responses:
+        '201':
+          description: Sprint retrospective created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SprintRetrospectiveResponse'
+
+  /projects/{projectId}/sprints/{sprintId}/retrospective/feedback:
+    get:
+      summary: Get retrospective feedback
+      tags:
+        - Retrospective Feedback
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [Start, Stop, Continue]
+      responses:
+        '200':
+          description: Retrospective feedback retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RetrospectiveFeedbackResponse'
+
+    post:
+      summary: Add retrospective feedback
+      tags:
+        - Retrospective Feedback
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sprintId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - category
+                - content
+              properties:
+                category:
+                  type: string
+                  enum: [Start, Stop, Continue]
+                content:
+                  type: string
+      responses:
+        '201':
+          description: Retrospective feedback added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrospectiveFeedbackResponse'
+
+components:
+  schemas:
+    SprintResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        goal:
+          type: string
+        plannedStartDate:
+          type: string
+          format: date
+        plannedEndDate:
+          type: string
+          format: date
+        actualStartDate:
+          type: string
+          format: date
+        actualEndDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Planned, "In progress", Completed, Canceled]
+        storyPointLimit:
+          type: integer
+        velocity:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        updatedBy:
+          type: string
+          format: uuid
+
+    SprintDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/SprintResponse'
+        - type: object
+          properties:
+            workItems:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkItemResponse'
+            review:
+              $ref: '#/components/schemas/SprintReviewResponse'
+            retrospective:
+              $ref: '#/components/schemas/SprintRetrospectiveResponse'
+
+    SprintReviewResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sprintId:
+          type: string
+          format: uuid
+        completedStoryPoints:
+          type: integer
+        completedTasks:
+          type: integer
+        totalTasks:
+          type: integer
+        completionRate:
+          type: number
+        reviewDate:
+          type: string
+          format: date-time
+        reviewedBy:
+          type: string
+          format: uuid
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SprintRetrospectiveResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sprintId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        feedback:
+          type: array
+          items:
+            $ref: '#/components/schemas/RetrospectiveFeedbackResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RetrospectiveFeedbackResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        retrospectiveId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        category:
+          type: string
+          enum: [Start, Stop, Continue]
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WorkItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          oneOf:
+            - type: string
+              enum: [High, Medium, Low]
+            - type: integer
+        storyPoint:
+          type: integer
+        status:
+          type: string
+          enum: [Backlog, Planned, "To do", "In Progress", "In Review", Done, Canceled]
+        assignee:
+          type: string
+          format: uuid
+        itemType:
+          type: string
+          enum: [Story, Task, Bug, SubTask]
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
